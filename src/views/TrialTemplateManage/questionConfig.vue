@@ -136,7 +136,7 @@
       :total="total"
       @current-change="handleCurrentChange"
     />
-    <el-dialog title="" :visible.sync="dialogFormVisible">
+    <el-dialog :title="title" :visible.sync="dialogFormVisible">
       <el-form :model="form">
         <el-form-item label="问题内容" :label-width="formLabelWidth">
           <el-input v-model="form.question" autocomplete="off" />
@@ -358,13 +358,17 @@ export default {
   methods: {
     /** 编辑父表格 */
     handleClick(row) {
+      this.title = `编辑问题${row.index}`
       this.type = 'updata'
       this.addType = 'father'
       this.dialogFormVisible = true
       this.form.ifVR = row.ifVR
       this.form.question = row.question
+      this.tableIndex = row.index - 1
     },
+    /** 编辑子问题 */
     handleChildClick(row) {
+      this.title = `编辑问题${this.tableIndex + 1}的子问题${row.index}`
       this.type = 'updata'
       this.addType = 'child'
       this.dialogFormVisible = true
@@ -440,6 +444,7 @@ export default {
     onSearch() {},
     /** 新增 */
     doAdd() {
+      this.title = '新增问题'
       this.dialogFormVisible = true
       this.answers = [1]
       this.form.answer.splice(1)
@@ -501,6 +506,7 @@ export default {
     addChild(row) {
       this.dialogFormVisible = true
       this.tableIndex = row.index - 1
+      this.title = `问题${row.index} 新增子问题`
       this.addType = 'child'
     },
     /** 添加回复 */
