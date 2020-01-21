@@ -48,7 +48,26 @@ export const constantRoutes = [
       meta: { title: '案件类别', icon: 'dashboard' }
     }]
   },
-
+  {
+    path: '/TrialTemplate',
+    component: Layout,
+    redirect: '/TrialTemplate/trial',
+    name: 'TrialTemplate',
+    meta: { title: '审讯模板管理', icon: 'example' },
+    children: [{
+      path: 'trial',
+      name: 'Trial',
+      component: () => import('@/views/TrialTemplateManage/index'),
+      meta: { title: '审讯模板', icon: 'dashboard' }
+    },
+    {
+      path: 'question',
+      name: 'Question',
+      hidden: true,
+      component: () => import('@/views/TrialTemplateManage/questionConfig'),
+      meta: { title: '问题配置', icon: 'table' }
+    }]
+  },
   {
     path: '/example',
     component: Layout,
