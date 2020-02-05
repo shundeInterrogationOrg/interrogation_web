@@ -1,6 +1,6 @@
 const { run } = require('runjs')
 const chalk = require('chalk')
-const config = require('../vue.config.js')
+const config = require('../vue.config.js/index.js.js')
 const rawArgv = process.argv.slice(2)
 const args = rawArgv.join(' ')
 
