@@ -97,14 +97,18 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/nested',
+    path: '/onlineChat',
     component: Layout,
-    redirect: '/nested/menu1',
-    name: 'Nested',
-    meta: {
-      title: '在线预览',
-      icon: 'nested'
-    }
+    redirect: '/onlineChat/index',
+    name: 'OnlineChat',
+    children: [
+      {
+        path: 'onlineChat',
+        name: 'onlineChat',
+        component: () => import('@/views/onlineChat/index'),
+        meta: { title: '在线预览', icon: 'nested' }
+      }
+    ]
     // children: [
     //   {
     //     path: 'menu1',
