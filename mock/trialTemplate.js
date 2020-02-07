@@ -23,7 +23,7 @@ module.exports = [
         ]
 
       })
-      res.send(result)
+      return result
     }
   },
   {
@@ -35,7 +35,7 @@ module.exports = [
         'code': 200,
         'status': 'success'
       })
-      res.send(result)
+      return result
     }
   },
   {
@@ -47,7 +47,7 @@ module.exports = [
         'code': 200,
         'status': 'success'
       })
-      res.send(result)
+      return result
     }
   },
   {

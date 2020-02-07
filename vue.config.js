@@ -31,7 +31,6 @@ module.exports = {
   // productionSourceMap: false,
   devServer: {
     port: 8090,
-    open: true,
     overlay: {
       warnings: false,
       errors: true
@@ -41,10 +40,8 @@ module.exports = {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       '/': {
         target: `http://localhost:8090/mock`,
-        changeOrigin: true,
-        pathRewrite: {
-          '/': ''
-        }
+        changeOrigin: true
+
       }
     },
     after: require('./mock/mock-server.js')

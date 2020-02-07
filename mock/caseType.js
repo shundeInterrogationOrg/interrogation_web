@@ -20,11 +20,7 @@ module.exports = [
         ]
 
       })
-      // let result = Mock.mock({
-      //   'code': 500,
-      //   'desc': '我报了500的错误'
-      // })
-      res.send(result)
+      return result
     }
   },
   {
@@ -40,7 +36,7 @@ module.exports = [
       //   'code': 500,
       //   'desc': '我报了500的错误'
       // })
-      res.send(result)
+      return result
     }
   },
   {
@@ -52,11 +48,7 @@ module.exports = [
         'code': 200,
         'status': 'success'
       })
-      // let result = Mock.mock({
-      //   'code': 500,
-      //   'desc': '我报了500的错误'
-      // })
-      res.send(result)
+      return result
     }
   },
   {
@@ -68,11 +60,7 @@ module.exports = [
         'code': 200,
         'status': 'success'
       })
-      // let result = Mock.mock({
-      //   'code': 500,
-      //   'desc': '我报了500的错误'
-      // })
-      res.send(result)
+      return result
     }
   }
 ]
