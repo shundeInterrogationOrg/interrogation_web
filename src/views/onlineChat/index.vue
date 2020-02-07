@@ -6,19 +6,19 @@
         <el-input v-model="moduleName" size="mini"></el-input>
       </div>
       <div class="moduleBtn">
-        <el-button size="mini" type="primary">查询预览</el-button>
+        <el-button size="mini" type="primary" @click="moduleSearch">查询预览</el-button>
       </div>
     </div>
-    <div class="moduleView">
+    <div class="moduleView" v-if="viewFlag">
       <div class="moduleTitle">{{moduleName}}</div>
       <div class="moduleWrapper">
         <div class="moduleViewBtn">开始</div>
         <div class="questionWrapper">
-          <div class="questionItem" v-for="(item,index) in data" :key="item.moduleType">
+          <div class="questionItem" v-for="(item,index) in data" :key="item.modelCategoryName">
             <h4>问题{{index}}</h4>
-            <p>{{item.question}}</p>
-            <div class="moduleStep" v-if="item.moduleType?true:false">
-              <div class="typeStep">{{item.moduleType}}</div>
+            <p>{{item.content}}</p>
+            <div class="moduleStep" v-if="item.modelCategoryName?true:false">
+              <div class="typeStep">{{item.modelCategoryName}}</div>
               <div class="stepYes">是</div>
               <div class="stepNo">否</div>
             </div>
@@ -31,22 +31,43 @@
 </template>
 
 <script>
+import { getOnlineData } from '@/api/onlineChat'
 export default {
   data() {
     return {
-      data: [{
-        question: '我们是佛山市顺德区公安局交通警察大队机动中队的民警，现就有' +
-            '关案情依法对你进行询问，你应当如实回答，故意作伪证或者隐匿证据会负相应的法律' +
-            '责任，对案件无关问题，你有拒绝回答的权利，你有要求办案人员或者公安机关负责' +
-            '人回避的权利，有陈述和申辩的权利，以上权利义务告知，你听清楚了吗？',
-        moduleType: '是非模型' },
-      {
-        question: '你今天因何事主动前来佛山市顺德区公安局交通警察大队机动中队',
-        moduleType: '通用模型' },
-      {
-        question: '办案民警有否将《行政案件权利义务告知书》送达给你？你是否阅读过《行政案件权利义务告知书》上的内容？',
-        moduleType: '' }],
-      moduleName: ''
+      // data: [{
+      //   question: '我们是佛山市顺德区公安局交通警察大队机动中队的民警，现就有' +
+      //       '关案情依法对你进行询问，你应当如实回答，故意作伪证或者隐匿证据会负相应的法律' +
+      //       '责任，对案件无关问题，你有拒绝回答的权利，你有要求办案人员或者公安机关负责' +
+      //       '人回避的权利，有陈述和申辩的权利，以上权利义务告知，你听清楚了吗？',
+      //   moduleType: '是非模型' },
+      // {
+      //   question: '你今天因何事主动前来佛山市顺德区公安局交通警察大队机动中队',
+      //   moduleType: '通用模型' },
+      // {
+      //   question: '办案民警有否将《行政案件权利义务告知书》送达给你？你是否阅读过《行政案件权利义务告知书》上的内容？',
+      //   moduleType: '' }],
+      data: [],
+      moduleName: '',
+      viewFlag: false
+    }
+  },
+  created() {
+    this.moduleSearch()
+  },
+  methods: {
+    async moduleSearch() {
+      const params = {
+        'name': this.moduleName
+      }
+      try {
+        const data = await getOnlineData(params)
+        this.data = data.rows
+      } catch (error) {
+        this.data = []
+        this.total = 0
+      }
+      this.viewFlag = true
     }
   }
 }

@@ -13,46 +13,67 @@
         border="border"
         style="width: 100%">
         <el-table-column
-          prop="date"
-          label="日期"
-          width="180">
-        </el-table-column>
-        <el-table-column
           prop="name"
-          label="姓名"
+          label="审讯模板名称"
           width="180">
         </el-table-column>
         <el-table-column
-          prop="address"
-          label="地址">
+          prop="questionNum"
+          label="问题数量"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          prop="modelNum"
+          label="模型数量">
+        </el-table-column>
+        <el-table-column
+          prop="useNum"
+          label="使用次数">
         </el-table-column>
       </el-table>
     </div>
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[10, 15, 20, 25]"
+      :page-size="10"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="400">
+    </el-pagination>
   </div>
 </template>
-
 <script>
+import { getAnalysisData } from '@/api/dataAnalysis'
 export default {
   data() {
     return {
-      tableData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
-      trialName: ''
+      tableData: [],
+      trialName: '',
+      currentPage: 1,
+      pageSize: 10,
+      total: 0
+    }
+  },
+  methods: {
+    handleSizeChange(val) {
+      this.pageSize = val
+    },
+    handleCurrentChange() {},
+    async moduleSearch() {
+      const params = {
+        'page': this.currentPage,
+        'rows': this.pageSize,
+        'name': this.trialName
+      }
+      try {
+        const data = await getAnalysisData(params)
+        this.tableData = data.rows
+        this.total = data.total
+      } catch (error) {
+        this.tableData = []
+        this.total = 0
+      }
     }
   }
 }
