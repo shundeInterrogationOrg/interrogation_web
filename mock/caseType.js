@@ -14,8 +14,8 @@ module.exports = [
             'update_time': '2020-01-08 19:24:18',
             'update_user': 'account_a',
             'name': '案件类型名称_8aaa',
-            'id': '0db413b5-13d1-4ba2-ab29-fc39f8276bdd',
-            'status': '1'
+            'id': '@integer(300, 5000)',
+            'status｜+1': ['0', '1']
           }
         ]
 

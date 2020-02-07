@@ -13,7 +13,7 @@ axios.defaults.headers.common['Pragma'] = 'no-cache'
 axios.defaults.headers.common['Expires'] = 0
 // let loadingInstance
 const config = {
-  baseURL: '/bigdata'
+  baseURL: ''
   // timeout: 60 * 1000, // Timeout
   // withCredentials: true, // Check cross-site Access-Control
 }

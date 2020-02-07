@@ -17,7 +17,7 @@ module.exports = [
             'case_name': '伪造牌照',
             'case_id': '97b47072-712a-4454-b129-a156579474c4',
             'id': '10f76683-e136-4a75-8da6-ef4d5f19a7e8',
-            'release_status': '0',
+            'release_status|+1': ['1', '0'],
             'status': '1'
           }
         ]

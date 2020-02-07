@@ -6,7 +6,8 @@
           size="small"
           type="primary"
           icon="el-icon-circle-plus-outline"
-          @click="addTemp">添加模板</el-button>
+          @click="addTemp"
+        >添加模板</el-button>
       </div>
       <div class="toolBtn">
         <el-button
@@ -27,34 +28,38 @@
     </div>
     <div class="temp-list">
       <el-table
+        ref="moduleTable"
         class="template-list"
         :data="tempList"
-        ref="moduleTable"
-        style="width: 100%">
+        style="width: 100%"
+      >
         <el-table-column
-          label="模板名称">
+          label="模板名称"
+        >
           <template slot-scope="scope">
             <div v-if="!scope.row.editing">
               <span>{{ scope.row.moduleName }}</span>
             </div>
             <div v-else>
-              <el-input v-model="scope.row.moduleName" placeholder="请填写模板名称"></el-input>
+              <el-input v-model="scope.row.moduleName" placeholder="请填写模板名称" />
             </div>
           </template>
         </el-table-column>
         <el-table-column
-          label="调用模型/程序">
+          label="调用模型/程序"
+        >
           <template slot-scope="scope">
             <div v-if="!scope.row.editing">
               <span>{{ scope.row.moduleIp }}</span>
             </div>
             <div v-else>
-              <el-input v-model="scope.row.moduleIp" placeholder="请填写调用模型/程序"></el-input>
+              <el-input v-model="scope.row.moduleIp" placeholder="请填写调用模型/程序" />
             </div>
           </template>
         </el-table-column>
         <el-table-column
-          label="模型类别">
+          label="模型类别"
+        >
           <template slot-scope="scope">
             <div v-if="!scope.row.editing">
               <span>{{ scope.row.moduleType }}</span>
@@ -65,43 +70,48 @@
                   v-for="item in enhanceDeal"
                   :key="item.value"
                   :label="item.label"
-                  :value="item.value">
-                </el-option>
+                  :value="item.value"
+                />
               </el-select>
             </div>
           </template>
         </el-table-column>
         <el-table-column
-          label="操作">
+          label="操作"
+        >
           <template slot-scope="scope">
             <div class="operate-groups">
               <el-button
-                type="primary"
-                size="mini"
                 v-if="!scope.row.editing"
-                icon="el-icon-edit-outline"
-                @click="handleEdit(scope.$index, scope.row)">编辑
-              </el-button>
-              <el-button
                 type="primary"
                 size="mini"
-                v-if="scope.row.editing"
-                icon="el-icon-success"
-                @click="handleSave(scope.$index, scope.row)">保存
+                icon="el-icon-edit-outline"
+                @click="handleEdit(scope.$index, scope.row)"
+              >编辑
               </el-button>
               <el-button
+                v-if="scope.row.editing"
+                type="primary"
+                size="mini"
+                icon="el-icon-success"
+                @click="handleSave(scope.$index, scope.row)"
+              >保存
+              </el-button>
+              <el-button
+                v-if="!scope.row.editing"
                 size="mini"
                 type="danger"
-                v-if="!scope.row.editing"
                 icon="el-icon-delete"
-                @click="handleDelete(scope.$index, scope.row)">删除
+                @click="handleDelete(scope.$index, scope.row)"
+              >删除
               </el-button>
               <el-button
+                v-if="scope.row.editing"
                 size="mini"
                 type="warning"
-                v-if="scope.row.editing"
                 icon="el-icon-warning"
-                @click="handleCancel(scope.$index, scope.row)">取消
+                @click="handleCancel(scope.$index, scope.row)"
+              >取消
               </el-button>
             </div>
           </template>

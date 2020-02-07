@@ -63,11 +63,12 @@
       <el-table-column
         fixed="right"
         label="操作"
-        width="100"
+        width="120"
       >
         <template slot-scope="scope">
-          <el-button type="text" size="small">发布</el-button>
-          <el-button type="text" size="small" @click.stop="handleClick(scope.row)">编辑</el-button>
+          <el-button v-if="scope.row.release_status==='0'" type="text" size="small" @click.stop="handleStatus(scope.row)">取消发布</el-button>
+          <el-button v-else type="text" size="small" @click.stop="handleStatus(scope.row)">发布</el-button>
+          <el-button type="text" size="small" style="float:right" @click.stop="handleClick(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -83,12 +84,12 @@
           <el-input v-model="form.name" autocomplete="off" />
         </el-form-item>
         <el-form-item label="案件类别" :label-width="formLabelWidth">
-          <el-select v-model="traidType" multiple placeholder="请选择" autocomplete="off">
+          <el-select v-model="traidType" placeholder="请选择" autocomplete="off">
             <el-option
               v-for="item in options"
-              :key="item.value"
-              :label="item.value"
-              :value="item.value"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
             />
           </el-select>
         </el-form-item>
@@ -104,7 +105,7 @@
 
 <script>
 import { getTrialTemplate, addTrialTemplate, deleteTrialTemplate, updataTrialTemplate } from '@/api/trialTemplate'
-
+import { getCases } from '@/api/caseType'
 export default {
   filters: {
     statusFilter(status) {
@@ -123,7 +124,7 @@ export default {
       listLoading: true,
       searchValue: '',
       trialName: '', // 审讯模板名称
-      traidType: [], // 案件类别选择
+      traidType: '', // 案件类别选择
       tableData: [],
       options: [
         { value: '二次酒驾' },
@@ -145,19 +146,59 @@ export default {
     }
   },
   created() {
+    this.getCaseType()
     this.getData()
   },
   mounted() {
-    this.getDay()
   },
   methods: {
+    /** 获取案件类别 */
+    async getCaseType() {
+      const params = {
+        'rows': 100,
+        'page': 1,
+        'name': ''
+      }
+      try {
+        const data = await getCases(params)
+        this.options = data.rows
+      } catch (error) {
+        this.options = []
+      }
+    },
     /** 编辑表格 */
     handleClick(row) {
       this.type = 'updata'
       this.dialogFormVisible = true
       this.form.name = row.template_name
       this.form.id = row.id
-      this.traidType = row.case_name.split('、')
+      this.form.release_status = row.release_status
+      this.traidType = row.case_name
+    },
+    /** 发布和取消发布 */
+    async handleStatus(row) {
+      const params = {
+        'name': row.template_name,
+        'case_classification_id': row.case_id,
+        'id': row.id,
+        'release_status': row.release_status
+      }
+      if (row.release_status === '1') {
+        params.release_status = '0'
+      } else {
+        params.release_status = '1'
+      }
+      try {
+        const data = await updataTrialTemplate(params)
+        if (data.status === 'success') {
+          this.$message.success('修改发布状态成功')
+          this.getData()
+        } else {
+          this.$message.error('修改发布状态失败')
+        }
+      } catch (error) {
+        this.$message.error('修改发布状态失败')
+      }
     },
     /** 获取表格信息 */
     async getData() {
@@ -166,7 +207,6 @@ export default {
         'caseName': this.searchValue,
         'page': this.currentPage,
         'rows': 10 }
-      console.log(params)
       this.listLoading = true
       try {
         const data = await getTrialTemplate(params)
@@ -191,7 +231,8 @@ export default {
       this.dialogFormVisible = true
       this.form.name = ''
       this.form.id = ''
-      this.traidType = []
+      this.form.release_status = ''
+      this.traidType = ''
       this.type = 'add'
     },
     /** 删除 */
@@ -236,18 +277,30 @@ export default {
       }
     },
     /** 复制模版 */
-    copyModule() {
+    async copyModule() {
       if (this.multipleSelection.length === 0) {
         this.$message('请选择要复制的模板')
       } else {
-        this.multipleSelection.forEach(ele => {
-          this.$refs.multipleTable.toggleRowSelection(ele)
+        if (this.multipleSelection.length > 1) {
+          this.$message.info('请选着单一模版进行复制')
+        } else {
+          // this.$refs.multipleTable.toggleRowSelection(this.multipleSelection[0])
           const obj = {}
-          Object.assign(obj, ele)
-          obj.traidName = obj.traidName + ' 复制'
-          obj.date = this.getDay()
-          this.tableData.push(obj)
-        })
+          obj.name = this.multipleSelection[0].template_name + ' 复制'
+          obj.case_classification_id = this.multipleSelection[0].case_id
+          try {
+            const data = await addTrialTemplate(obj)
+            if (data.status === 'success') {
+              this.$message.success('复制审讯模版成功')
+              this.currentPage = 1
+              this.getData()
+            } else {
+              this.$message.error('复制审讯模版失败')
+            }
+          } catch (error) {
+            this.$message.error('复制审讯模版失败')
+          }
+        }
       }
     },
     /**
@@ -262,71 +315,52 @@ export default {
      * {"name":"伪造牌照审讯模板_30","case_classification_id":"97b47072-712a-4454-b129-a156579474c4"}
      */
     async doSure() {
-      if (this.type === 'add') {
-        const params = {
-          'name': this.form.name,
-          'case_classification_id': this.traidType
-        }
-        try {
-          const data = await addTrialTemplate(params)
-          if (data.status === 'success') {
-            this.$message.success('新增审讯模版成功')
-            this.currentPage = 1
-            this.getData()
-          } else {
+      if (this.form.name === '') {
+        this.$message.error('模版名称不能为空')
+      } else if (this.traidType === '') {
+        this.$message.error('案件类别不能为空')
+      } else {
+        if (this.type === 'add') {
+          const params = {
+            'name': this.form.name,
+            'case_classification_id': this.traidType
+          }
+          try {
+            const data = await addTrialTemplate(params)
+            if (data.status === 'success') {
+              this.$message.success('新增审讯模版成功')
+              this.currentPage = 1
+              this.getData()
+            } else {
+              this.$message.error('新增审讯模版失败')
+            }
+          } catch (error) {
             this.$message.error('新增审讯模版失败')
           }
-        } catch (error) {
-          this.$message.error('新增审讯模版失败')
-        }
-      } else {
-        const params = {
-          'name': this.form.name,
-          'case_classification_id': this.traidType,
-          'id': this.form.id
-        }
-        try {
-          const data = await updataTrialTemplate(params)
-          if (data.status === 'success') {
-            this.$message.success('修改审讯模版成功')
-            this.getData()
-          } else {
+        } else {
+          const params = {
+            'name': this.form.name,
+            'case_classification_id': this.traidType,
+            'id': this.form.id,
+            'release_status': this.form.release_status
+          }
+          try {
+            const data = await updataTrialTemplate(params)
+            if (data.status === 'success') {
+              this.$message.success('修改审讯模版成功')
+              this.getData()
+            } else {
+              this.$message.error('修改审讯模版失败')
+            }
+          } catch (error) {
             this.$message.error('修改审讯模版失败')
           }
-        } catch (error) {
-          this.$message.error('修改审讯模版失败')
         }
+        this.dialogFormVisible = false
       }
-      this.dialogFormVisible = false
     },
     toQuestion(row) {
       this.$router.push({ name: 'Question', params: row })
-    },
-    getDay() {
-      const date = new Date()
-      const y = date.getFullYear()
-      let m = date.getMonth() + 1
-      let d = date.getDate()
-      let hh = date.getHours()
-      let mm = date.getMinutes()
-      let ss = date.getSeconds()
-      if (m < 10) {
-        m = '0' + m
-      }
-      if (d < 10) {
-        d = '0' + d
-      }
-      if (hh < 10) {
-        hh = '0' + hh
-      }
-      if (mm < 10) {
-        mm = '0' + mm
-      }
-      if (ss < 10) {
-        ss = '0' + ss
-      }
-      return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
-      // console.log(y, m, d, hh, mm, ss)
     }
   }
 }

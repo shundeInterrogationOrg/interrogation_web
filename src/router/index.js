@@ -50,23 +50,22 @@ export const constantRoutes = [
   },
 
   {
-    path: '/example',
+    path: '/trialTemplateManage',
     component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'example' },
+    name: 'TrialTemplateManage',
     children: [
       {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/form/moduleManage'),
-        meta: { title: 'Table', icon: 'table' }
+        path: 'trialTemplateManage',
+        name: 'TrialTemplateManage',
+        component: () => import('@/views/TrialTemplateManage/index'),
+        meta: { title: '审讯模版', icon: 'table' }
       },
       {
-        path: 'tree',
-        name: 'Tree',
-        // component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
+        path: 'question',
+        name: 'Question',
+        hidden: true,
+        component: () => import('@/views/TrialTemplateManage/questionConfig'),
+        meta: { title: '审讯模版', icon: 'table' }
       }
     ]
   },
@@ -84,9 +83,9 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/form',
+    path: '/moduleManage',
     component: Layout,
-    name: 'form',
+    name: 'moduleManage',
     children: [
       {
         path: 'moduleManage',

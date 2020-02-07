@@ -12,12 +12,9 @@ module.exports = {
   devServer: {
     port: 8090,
     proxy: {
-      '/bigdata': {
+      '/': {
         target: `http://localhost:8090/mock`,
-        changeOrigin: true,
-        pathRewrite: {
-          '/bigdata': ''
-        }
+        changeOrigin: true
       }
       // '/bigdata': {
       //   target: 'http://192.168.43.88:3001',
