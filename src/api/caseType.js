@@ -6,17 +6,17 @@ import axios from '@/utils/axios'
  */
 
 const getCases = function(params) {
-  return axios.get('/caseClassification/queryPage', { params })
+  return axios.post('/caseClassification/queryPage', { params })
 }
 
 const addCases = function(params) {
-  return axios.get('/caseClassification/add', { params })
+  return axios.post('/caseClassification/add', { params })
 }
 const deleteCases = function(params) {
-  return axios.get('/caseClassification/delete', { params })
+  return axios.post('/caseClassification/delete', { params })
 }
 const updataCases = function(params) {
-  return axios.get('/caseClassification/update', { params })
+  return axios.post('/caseClassification/update', { params })
 }
 
 export {

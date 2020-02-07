@@ -6,17 +6,17 @@ import axios from '@/utils/axios'
  */
 
 const getTrialTemplate = function(params) {
-  return axios.get('/trialTemplate/queryPage', { params })
+  return axios.post('/trialTemplate/queryPage', { params })
 }
 
 const addTrialTemplate = function(params) {
-  return axios.get('/trialTemplate/add', { params })
+  return axios.post('/trialTemplate/add', { params })
 }
 const deleteTrialTemplate = function(params) {
-  return axios.get('/trialTemplate/delete', { params })
+  return axios.post('/trialTemplate/delete', { params })
 }
 const updataTrialTemplate = function(params) {
-  return axios.get('/trialTemplate/update', { params })
+  return axios.post('/trialTemplate/update', { params })
 }
 
 export {

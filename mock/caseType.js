@@ -4,7 +4,7 @@ module.exports = [
   {
     desc: '获取案件',
     url: '/caseClassification/queryPage',
-    type: 'get',
+    type: 'post',
     response: (req, res) => {
       const result = Mock.mock({
         'code': 200,
@@ -30,7 +30,7 @@ module.exports = [
   {
     desc: '新增案件',
     url: '/caseClassification/add',
-    type: 'get',
+    type: 'post',
     response: (req, res) => {
       const result = Mock.mock({
         'code': 200,
@@ -46,7 +46,7 @@ module.exports = [
   {
     desc: '删除案件',
     url: '/caseClassification/delete',
-    type: 'get',
+    type: 'post',
     response: (req, res) => {
       const result = Mock.mock({
         'code': 200,
@@ -62,7 +62,7 @@ module.exports = [
   {
     desc: '修改案件',
     url: '/caseClassification/update',
-    type: 'get',
+    type: 'post',
     response: (req, res) => {
       const result = Mock.mock({
         'code': 200,

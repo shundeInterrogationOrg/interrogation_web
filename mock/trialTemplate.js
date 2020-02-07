@@ -4,7 +4,7 @@ module.exports = [
   {
     desc: '获取审讯模版',
     url: '/trialTemplate/queryPage',
-    type: 'get',
+    type: 'post',
     response: (req, res) => {
       const result = Mock.mock({
         'code': 200,
@@ -29,7 +29,7 @@ module.exports = [
   {
     desc: '新增审讯模版',
     url: '/trialTemplate/add',
-    type: 'get',
+    type: 'post',
     response: (req, res) => {
       const result = Mock.mock({
         'code': 200,
@@ -41,7 +41,7 @@ module.exports = [
   {
     desc: '删除审讯模版',
     url: '/trialTemplate/delete',
-    type: 'get',
+    type: 'post',
     response: (req, res) => {
       const result = Mock.mock({
         'code': 200,
@@ -53,7 +53,7 @@ module.exports = [
   {
     desc: '修改审讯模版',
     url: '/trialTemplate/update',
-    type: 'get',
+    type: 'post',
     response: (req, res) => {
       const result = Mock.mock({
         'code': 200,
