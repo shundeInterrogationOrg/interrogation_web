@@ -48,25 +48,127 @@ export const constantRoutes = [
       meta: { title: '案件类别', icon: 'dashboard' }
     }]
   },
+
   {
-    path: '/TrialTemplate',
+    path: '/example',
     component: Layout,
-    redirect: '/TrialTemplate/trial',
-    name: 'TrialTemplate',
-    meta: { title: '审讯模板管理', icon: 'example' },
-    children: [{
-      path: 'trial',
-      name: 'Trial',
-      component: () => import('@/views/TrialTemplateManage/index'),
-      meta: { title: '审讯模板', icon: 'dashboard' }
-    },
-    {
-      path: 'question',
-      name: 'Question',
-      hidden: true,
-      component: () => import('@/views/TrialTemplateManage/questionConfig'),
-      meta: { title: '问题配置', icon: 'table' }
-    }]
+    redirect: '/example/table',
+    name: 'Example',
+    meta: { title: 'Example', icon: 'example' },
+    children: [
+      {
+        path: 'table',
+        name: 'Table',
+        component: () => import('@/views/form/moduleManage'),
+        meta: { title: 'Table', icon: 'table' }
+      },
+      {
+        path: 'tree',
+        name: 'Tree',
+        // component: () => import('@/views/tree/index'),
+        meta: { title: 'Tree', icon: 'tree' }
+      }
+    ]
+  },
+  {
+    path: '/form',
+    component: Layout,
+    name: 'form',
+    children: [
+      {
+        path: 'index',
+        name: 'index',
+        component: () => import('@/views/form/index'),
+        meta: { title: '模型管理', icon: 'table' }
+      }
+    ]
+  },
+  {
+    path: '/form',
+    component: Layout,
+    name: 'form',
+    children: [
+      {
+        path: 'moduleManage',
+        name: 'ModuleManage',
+        component: () => import('@/views/form/moduleManage'),
+        meta: { title: '模型类型管理', icon: 'tree' }
+      }
+    ]
+  },
+  {
+    path: '/onlineChat',
+    component: Layout,
+    redirect: '/onlineChat/index',
+    name: 'OnlineChat',
+    children: [
+      {
+        path: 'onlineChat',
+        name: 'onlineChat',
+        component: () => import('@/views/onlineChat/index'),
+        meta: { title: '在线预览', icon: 'nested' }
+      }
+    ]
+    // children: [
+    //   {
+    //     path: 'menu1',
+    //     component: () => import('@/views/nested/menu1/index'), // Parent router-view
+    //     name: 'Menu1',
+    //     meta: { title: '在线测试' }
+    //     // children: [
+    //     //   {
+    //     //     path: 'menu1-1',
+    //     //     component: () => import('@/views/nested/menu1/menu1-1'),
+    //     //     name: 'Menu1-1',
+    //     //     meta: { title: 'Menu1-1' }
+    //     //   },
+    //     //   {
+    //     //     path: 'menu1-2',
+    //     //     component: () => import('@/views/nested/menu1/menu1-2'),
+    //     //     name: 'Menu1-2',
+    //     //     meta: { title: 'Menu1-2' },
+    //     //     children: [
+    //     //       {
+    //     //         path: 'menu1-2-1',
+    //     //         component: () => import('@/views/nested/menu1/menu1-2/menu1-2-1'),
+    //     //         name: 'Menu1-2-1',
+    //     //         meta: { title: 'Menu1-2-1' }
+    //     //       },
+    //     //       {
+    //     //         path: 'menu1-2-2',
+    //     //         component: () => import('@/views/nested/menu1/menu1-2/menu1-2-2'),
+    //     //         name: 'Menu1-2-2',
+    //     //         meta: { title: 'Menu1-2-2' }
+    //     //       }
+    //     //     ]
+    //     //   },
+    //     //   {
+    //     //     path: 'menu1-3',
+    //     //     component: () => import('@/views/nested/menu1/menu1-3'),
+    //     //     name: 'Menu1-3',
+    //     //     meta: { title: 'Menu1-3' }
+    //     //   }
+    //     // ]
+    //   },
+    //   {
+    //     path: 'menu2',
+    //     component: () => import('@/views/nested/menu2/index'),
+    //     meta: { title: 'menu2' }
+    //   }
+    // ]
+  },
+  {
+    path: '/dataAnalysis',
+    redirect: '/dataAnalysis/dataAnalysis',
+    name: 'DataAnalysis',
+    component: Layout,
+    children: [
+      {
+        path: 'dataAnalysis',
+        component: () => import('@/views/dataAnalysis/dataAnalysis'),
+        meta: { title: '数据统计', icon: 'link' }
+      }
+    ]
   },
 
   // 404 page must be placed at the end !!!
@@ -75,7 +177,7 @@ export const constantRoutes = [
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support
-  // scrollBehavior: () => ({ y: 0 }),
+  scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })
 
