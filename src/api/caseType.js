@@ -1,0 +1,27 @@
+// 案件类别相关接口
+import axios from '@/utils/axios'
+
+/**
+ * @dec  获取案件类别
+ */
+
+const getCases = function(params) {
+  return axios.get('/caseClassification/queryPage', { params })
+}
+
+const addCases = function(params) {
+  return axios.get('/caseClassification/add', { params })
+}
+const deleteCases = function(params) {
+  return axios.get('/caseClassification/delete', { params })
+}
+const updataCases = function(params) {
+  return axios.get('/caseClassification/update', { params })
+}
+
+export {
+  getCases,
+  addCases,
+  deleteCases,
+  updataCases
+}

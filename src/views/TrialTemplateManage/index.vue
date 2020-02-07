@@ -1,3 +1,4 @@
+//审讯模版
 <template>
   <div class="app-container">
     <el-row class="table-toolbar">
@@ -46,18 +47,18 @@
         width="55"
       />
       <el-table-column
-        prop="traidName"
+        prop="template_name"
         label="审讯模板名称"
       />
       <el-table-column
-        prop="name"
+        prop="case_name"
         label="案件类别"
       />
       <el-table-column
         label="更新时间"
         width="160"
       >
-        <template slot-scope="scope">{{ scope.row.date }}</template>
+        <template slot-scope="scope">{{ scope.row.update_time }}</template>
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -79,7 +80,7 @@
     <el-dialog title="案件信息" :visible.sync="dialogFormVisible">
       <el-form :model="form">
         <el-form-item label="审讯模版名称" :label-width="formLabelWidth">
-          <el-input v-model="form.traidName" autocomplete="off" />
+          <el-input v-model="form.name" autocomplete="off" />
         </el-form-item>
         <el-form-item label="案件类别" :label-width="formLabelWidth">
           <el-select v-model="traidType" multiple placeholder="请选择" autocomplete="off">
@@ -102,7 +103,7 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
+import { getTrialTemplate, addTrialTemplate, deleteTrialTemplate, updataTrialTemplate } from '@/api/trialTemplate'
 
 export default {
   filters: {
@@ -123,32 +124,7 @@ export default {
       searchValue: '',
       trialName: '', // 审讯模板名称
       traidType: [], // 案件类别选择
-      tableData: [{
-        traidName: '酒驾、无证驾驶及伪造车牌号码审讯模板',
-        date: '2016-05-03',
-        name: '二次酒驾、无证驾驶、伪造车牌号码',
-        address: '二次酒驾、无证驾驶、伪造车牌号码'
-      }, {
-        date: '2016-05-02',
-        name: '醉酒驾驶',
-        traidName: '醉酒驾驶',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '盗窃(行政)',
-        traidName: '盗窃(行政)',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-01',
-        name: '盗窃(刑事)',
-        traidName: '盗窃(刑事)',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-08',
-        name: '赌博(行政)',
-        traidName: '赌博(行政)',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }],
+      tableData: [],
       options: [
         { value: '二次酒驾' },
         { value: '醉酒驾驶' },
@@ -169,33 +145,52 @@ export default {
     }
   },
   created() {
-    this.fetchData()
+    this.getData()
   },
   mounted() {
     this.getDay()
   },
   methods: {
+    /** 编辑表格 */
     handleClick(row) {
       this.type = 'updata'
       this.dialogFormVisible = true
-      this.form.traidName = row.traidName
-      this.traidType = row.name.split('、')
+      this.form.name = row.template_name
+      this.form.id = row.id
+      this.traidType = row.case_name.split('、')
     },
-    fetchData() {
+    /** 获取表格信息 */
+    async getData() {
+      const params = {
+        'template_name': this.trialName,
+        'caseName': this.searchValue,
+        'page': this.currentPage,
+        'rows': 10 }
+      console.log(params)
       this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
+      try {
+        const data = await getTrialTemplate(params)
+        this.tableData = data.rows
+        this.total = data.total
         this.listLoading = false
-      })
+      } catch (error) {
+        this.tableData = []
+        this.total = 0
+        this.listLoading = false
+      }
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
-    onSearch() {},
+    onSearch() {
+      this.currentPage = 1
+      this.getData()
+    },
     /** 新增 */
     doAdd() {
       this.dialogFormVisible = true
-      Object.assign(this.form, {})
+      this.form.name = ''
+      this.form.id = ''
       this.traidType = []
       this.type = 'add'
     },
@@ -208,22 +203,36 @@ export default {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
-        }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          })
+        }).then(async() => {
+          const idList = []
           this.multipleSelection.forEach(row => {
-            this.$refs.multipleTable.toggleRowSelection(row)
+            idList.push(row.id)
           })
-          this.multipleSelection = []
+          const params = {
+            idList
+          }
+          try {
+            const data = await deleteTrialTemplate(params)
+            if (data.status === 'success') {
+              this.$message.success('删除成功')
+              this.currentPage = 1
+              this.getData()
+            } else {
+              this.$message.error('删除失败')
+            }
+          } catch (error) {
+            this.$message.error('删除失败')
+          }
         }).catch(() => {
           this.$message({
             type: 'info',
             message: '已取消删除'
           })
+          this.multipleSelection.forEach(row => {
+            this.$refs.multipleTable.toggleRowSelection(row)
+          })
+          this.multipleSelection = []
         })
-        console.log(this.multipleSelection)
       }
     },
     /** 复制模版 */
@@ -247,16 +256,48 @@ export default {
      */
     handleCurrentChange(val) {
       this.currentPage = val
+      this.getData()
     },
-    /** 提交表单 */
-    doSure() {
+    /** 提交表单
+     * {"name":"伪造牌照审讯模板_30","case_classification_id":"97b47072-712a-4454-b129-a156579474c4"}
+     */
+    async doSure() {
       if (this.type === 'add') {
-        const add = {}
-        add.traidName = this.form.traidName
-        add.name = this.traidType.join('、')
-        add.date = this.getDay()
-        this.tableData.push(add)
+        const params = {
+          'name': this.form.name,
+          'case_classification_id': this.traidType
+        }
+        try {
+          const data = await addTrialTemplate(params)
+          if (data.status === 'success') {
+            this.$message.success('新增审讯模版成功')
+            this.currentPage = 1
+            this.getData()
+          } else {
+            this.$message.error('新增审讯模版失败')
+          }
+        } catch (error) {
+          this.$message.error('新增审讯模版失败')
+        }
+      } else {
+        const params = {
+          'name': this.form.name,
+          'case_classification_id': this.traidType,
+          'id': this.form.id
+        }
+        try {
+          const data = await updataTrialTemplate(params)
+          if (data.status === 'success') {
+            this.$message.success('修改审讯模版成功')
+            this.getData()
+          } else {
+            this.$message.error('修改审讯模版失败')
+          }
+        } catch (error) {
+          this.$message.error('修改审讯模版失败')
+        }
       }
+      this.dialogFormVisible = false
     },
     toQuestion(row) {
       this.$router.push({ name: 'Question', params: row })
