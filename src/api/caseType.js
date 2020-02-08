@@ -6,17 +6,23 @@ import axios from '@/utils/axios'
  */
 
 const getCases = function(params) {
-  return axios.post('/caseClassification/queryPage', { params })
+  axios.post('/caseClassification/queryPage', params).then((res) => {
+    console.log(res)
+  }).catch((err) => {
+    console.log('111', err)
+  })
+  const data = axios.post('/caseClassification/queryPage', params)
+  return data
 }
 
 const addCases = function(params) {
-  return axios.post('/caseClassification/add', { params })
+  return axios.post('/caseClassification/add', params)
 }
 const deleteCases = function(params) {
-  return axios.post('/caseClassification/delete', { params })
+  return axios.post('/caseClassification/delete', params)
 }
 const updataCases = function(params) {
-  return axios.post('/caseClassification/update', { params })
+  return axios.post('/caseClassification/update', params)
 }
 
 export {

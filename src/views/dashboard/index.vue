@@ -109,23 +109,18 @@ export default {
   },
   methods: {
     /** 获取表格信息 */
-    async getData() {
+    getData() {
       const params = {
         'rows': 10,
         'page': this.currentPage,
         'name': this.searchValue
       }
       this.listLoading = true
-      try {
-        const data = await getCases(params)
+      getCases(params).then(({ data }) => {
         this.tableData = data.rows
         this.total = data.total
         this.listLoading = false
-      } catch (error) {
-        this.tableData = []
-        this.total = 0
-        this.listLoading = false
-      }
+      })
     },
 
     handleSelectionChange(val) {
@@ -156,8 +151,8 @@ export default {
           'name': this.form.name
         }
         try {
-          const data = await addCases(params)
-          if (data.status === 'success') {
+          const { data } = await addCases(params)
+          if (data.status === 'sucess') {
             this.$message.success('新增案件成功')
             this.currentPage = 1
             this.getData()
@@ -173,8 +168,8 @@ export default {
           'id': this.form.id
         }
         try {
-          const data = await updataCases(params)
-          if (data.status === 'success') {
+          const { data } = await updataCases(params)
+          if (data.status === 'sucess') {
             this.$message.success('修改案件成功')
             this.getData()
           } else {
@@ -204,8 +199,8 @@ export default {
             idList
           }
           try {
-            const data = await deleteCases(params)
-            if (data.status === 'success') {
+            const { data } = await deleteCases(params)
+            if (data.status === 'sucess') {
               this.$message.success('删除成功')
               this.currentPage = 1
               this.getData()

@@ -160,7 +160,7 @@ export default {
         'name': ''
       }
       try {
-        const data = await getCases(params)
+        const { data } = await getCases(params)
         this.options = data.rows
       } catch (error) {
         this.options = []
@@ -189,8 +189,8 @@ export default {
         params.release_status = '1'
       }
       try {
-        const data = await updataTrialTemplate(params)
-        if (data.status === 'success') {
+        const { data } = await updataTrialTemplate(params)
+        if (data.status === 'sucess') {
           this.$message.success('修改发布状态成功')
           this.getData()
         } else {
@@ -209,7 +209,7 @@ export default {
         'rows': 10 }
       this.listLoading = true
       try {
-        const data = await getTrialTemplate(params)
+        const { data } = await getTrialTemplate(params)
         this.tableData = data.rows
         this.total = data.total
         this.listLoading = false
@@ -253,8 +253,8 @@ export default {
             idList
           }
           try {
-            const data = await deleteTrialTemplate(params)
-            if (data.status === 'success') {
+            const { data } = await deleteTrialTemplate(params)
+            if (data.status === 'sucess') {
               this.$message.success('删除成功')
               this.currentPage = 1
               this.getData()
@@ -289,8 +289,8 @@ export default {
           obj.name = this.multipleSelection[0].template_name + ' 复制'
           obj.case_classification_id = this.multipleSelection[0].case_id
           try {
-            const data = await addTrialTemplate(obj)
-            if (data.status === 'success') {
+            const { data } = await addTrialTemplate(obj)
+            if (data.status === 'sucess') {
               this.$message.success('复制审讯模版成功')
               this.currentPage = 1
               this.getData()
@@ -326,8 +326,8 @@ export default {
             'case_classification_id': this.traidType
           }
           try {
-            const data = await addTrialTemplate(params)
-            if (data.status === 'success') {
+            const { data } = await addTrialTemplate(params)
+            if (data.status === 'sucess') {
               this.$message.success('新增审讯模版成功')
               this.currentPage = 1
               this.getData()
@@ -345,8 +345,8 @@ export default {
             'release_status': this.form.release_status
           }
           try {
-            const data = await updataTrialTemplate(params)
-            if (data.status === 'success') {
+            const { data } = await updataTrialTemplate(params)
+            if (data.status === 'sucess') {
               this.$message.success('修改审讯模版成功')
               this.getData()
             } else {

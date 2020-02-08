@@ -29,22 +29,30 @@ module.exports = {
   // assetsDir: 'static',
   // lintOnSave: process.env.NODE_ENV === 'development',
   // productionSourceMap: false,
-  devServer: {
-    port: 8090,
-    overlay: {
-      warnings: false,
-      errors: true
-    },
-    proxy: {
-      // change xxx-api/login => mock/login
-      // detail: https://cli.vuejs.org/config/#devserver-proxy
-      '/': {
-        target: `http://localhost:8090/mock`,
-        changeOrigin: true
 
+  devServer: {
+    port: 8091,
+    proxy: {
+      // '/interrogation': {
+      //   // target: `http://localhost:8090/mock`,
+      //   changeOrigin: true,
+      //   pathRewrite: {
+      //     '/interrogation': ''
+      //   }
+      // }
+      '/interrogation': {
+        target: 'http://localhost:8090',
+        changeOrigin: true,
+        pathRewrite: {
+          '/interrogation': ''
+        }
       }
     },
-    after: require('./mock/mock-server.js')
+    overlay: {
+      warnings: true,
+      errors: true
+    },
+    after: require('./mock/mock-server')
   },
   // configureWebpack: {
   //   // provide the app's title in webpack's name field, so that

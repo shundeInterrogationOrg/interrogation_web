@@ -13,7 +13,7 @@ axios.defaults.headers.common['Pragma'] = 'no-cache'
 axios.defaults.headers.common['Expires'] = 0
 // let loadingInstance
 const config = {
-  baseURL: ''
+  baseURL: '/interrogation'
   // timeout: 60 * 1000, // Timeout
   // withCredentials: true, // Check cross-site Access-Control
 }
@@ -38,14 +38,16 @@ _axios.interceptors.response.use(
     // if (loadingInstance) {
     //   loadingInstance.close()
     // }
-    const res = response.data
-    const { code, desc } = res
-    if (code === 200) {
+
+    const res = response
+    const { status, statusText } = res
+
+    if (status === 200) {
       return res
-    } else if (code === 500) {
-      Message.error(desc)
-      return Promise.reject(desc)
-    } else if (code === 4000) {
+    } else if (status === 500) {
+      Message.error(statusText)
+      return Promise.reject(statusText)
+    } else if (status === 4000) {
       const { data } = res
       localStorage.removeItem('isLogin')
       localStorage.removeItem('userInfo')
