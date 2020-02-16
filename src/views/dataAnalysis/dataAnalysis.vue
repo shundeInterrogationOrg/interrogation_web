@@ -1,91 +1,159 @@
 <template>
-  <div class="dataAnalysis_wrapper">
-    <div class="dataAnalysis_tool">
-      <el-button type="primary" size="mini" class="searchBtn">查询</el-button>
-      <div class="tool_ipt">
-        <el-input v-model="trialName" size="mini"></el-input>
-      </div>
-      <span class="iptName">审讯模块名称:</span>
-    </div>
-    <div class="dataAnalysis_table">
-      <el-table
-        :data="tableData"
-        border="border"
-        style="width: 100%">
-        <el-table-column
-          prop="name"
-          label="审讯模板名称"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          prop="questionNum"
-          label="问题数量"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          prop="modelNum"
-          label="模型数量">
-        </el-table-column>
-        <el-table-column
-          prop="useNum"
-          label="使用次数">
-        </el-table-column>
-      </el-table>
-    </div>
+  <div class="app-container">
+    <el-row class="table-toolbar">
+      <el-col :span="13">&nbsp;</el-col>
+      <el-col :span="7" class="searchStyle">
+        <span>审讯模板名称:</span>
+        <el-input
+          v-model="searchValue"
+          size="small"
+          prefix-icon="el-icon-search"
+          placeholder="审讯模板名称"
+          clearable
+        />
+      </el-col>
+      <el-col :span="3">
+        <el-button type="primary" size="small" @click="onSearch">搜索</el-button>
+      </el-col>
+    </el-row>
+    <el-table
+      ref="multipleTable"
+      border
+      size="small"
+      :data="tableData"
+      tooltip-effect="dark"
+      style="width: 100%;"
+      header-row-class-name="headStyle"
+    >
+      <el-table-column
+        type="selection"
+        width="55"
+      />
+      <el-table-column
+        prop="name"
+        label="审讯模板名称"
+      />
+      <el-table-column
+        prop="questionNum"
+        width="150"
+        label="问题数量"
+      />
+      <el-table-column
+        prop="modelNum"
+        width="150"
+        label="模型数量"
+      />
+      <el-table-column
+        prop="useNum"
+        width="150"
+        label="使用次数"
+      />
+      <el-table-column
+        prop="updateTime"
+        width="160"
+        label="更新时间"
+      />
+    </el-table>
     <el-pagination
-      @size-change="handleSizeChange"
+      background
+      layout="total,prev, pager, next,jumper"
+      :total="total"
       @current-change="handleCurrentChange"
-      :current-page="currentPage"
-      :page-sizes="[10, 15, 20, 25]"
-      :page-size="10"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="400">
-    </el-pagination>
+    />
   </div>
 </template>
+
 <script>
 import { getAnalysisData } from '@/api/dataAnalysis'
+
 export default {
-  data() {
-    return {
-      tableData: [],
-      trialName: '',
-      currentPage: 1,
-      pageSize: 10,
-      total: 0
+  filters: {
+    statusFilter(status) {
+      const statusMap = {
+        published: 'success',
+        draft: 'gray',
+        deleted: 'danger'
+      }
+      return statusMap[status]
     }
   },
+  data() {
+    return {
+      list: null,
+      listLoading: true,
+      searchValue: '',
+      tableData: [],
+      multipleSelection: [], // 表格选中
+      currentPage: 1, // 当前页
+      total: null,
+      dialogFormVisible: false,
+      form: {
+        name: ''
+      },
+      formLabelWidth: '100px',
+      type: 'add'// 判断是新增还是修改
+    }
+  },
+  created() {
+    this.getData()
+  },
   methods: {
-    handleSizeChange(val) {
-      this.pageSize = val
-    },
-    handleCurrentChange() {},
-    async moduleSearch() {
+    /** 获取表格信息 */
+    getData() {
       const params = {
+        'rows': 10,
         'page': this.currentPage,
-        'rows': this.pageSize,
-        'name': this.trialName
+        'name': this.searchValue
       }
-      try {
-        const data = await getAnalysisData(params)
+      this.listLoading = true
+      getAnalysisData(params).then(({ data }) => {
         this.tableData = data.rows
         this.total = data.total
-      } catch (error) {
-        this.tableData = []
-        this.total = 0
-      }
+        this.listLoading = false
+      })
+    },
+
+    /** 搜索 */
+    onSearch() {
+      this.currentPage = 1
+      this.getData()
+    },
+    /**
+     * @dec 当前页发生改变时触发 1.更换当前页值 2.发射获取数据的事件
+     * @param val 页码
+     */
+    handleCurrentChange(val) {
+      this.currentPage = val
+      this.getData()
     }
   }
 }
 </script>
 <style scoped lang="scss">
-  .dataAnalysis_wrapper{
-    .dataAnalysis_tool{
-      padding: 8px 15px;
-      height: 45px;
-      .iptName{float: right;font-size: 14px;line-height: 28px;margin-right: 10px}
-      .tool_ipt{width: 200px;float: right;margin-right: 15px;}
-      .searchBtn{float: right;margin-right: 15px}
+.table-toolbar {
+    padding: 0 10px 10px;
+    .el-col {
+      margin-right: 10px;
+    }
+    .searchStyle{
+      display: flex;
+      // justify-items: baseline;
+      justify-content: space-between;
+      align-items: center;
+      span{
+        width: 60%
+      }
     }
   }
+  .headStyle th{
+    color:red;
+    background: #6666!important
+  }
+   .el-pagination {
+    height: 44px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
 </style>

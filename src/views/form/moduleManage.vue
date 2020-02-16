@@ -1,12 +1,12 @@
 <template>
-  <div class="template-manage">
+  <div class="template-manage ">
     <div class="temp-title">
       <div class="toolBtn">
         <el-button
           size="small"
           type="primary"
           icon="el-icon-circle-plus-outline"
-          @click="addTemp">添加模板</el-button>
+          @click="addTemp">添加别类</el-button>
       </div>
       <div class="toolBtn">
         <el-button
@@ -16,60 +16,46 @@
           @click="copyTemp"
         >复制</el-button>
       </div>
-      <div class="toolBtn">
+      <!-- <div class="toolBtn">
         <el-button
           size="small"
           type="primary"
           icon="el-icon-remove-outline"
           @click="deleteTemp"
         >删除</el-button>
-      </div>
+      </div> -->
     </div>
     <div class="temp-list">
       <el-table
         class="template-list"
+        @selection-change="handleSelectionChange"
         :data="tempList"
         style="width: 100%">
         <el-table-column
-          label="模板名称">
-          <template slot-scope="scope">
-            <div v-if="!scope.row.editing">
-              <span>{{ scope.row.moduleName }}</span>
-            </div>
-            <div v-else>
-              <el-input v-model="scope.row.moduleName" placeholder="请填写模板名称"></el-input>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="调用模型/程序">
-          <template slot-scope="scope">
-            <div v-if="!scope.row.editing">
-              <span>{{ scope.row.moduleIp }}</span>
-            </div>
-            <div v-else>
-              <el-input v-model="scope.row.moduleIp" placeholder="请填写调用模型/程序"></el-input>
-            </div>
-          </template>
-        </el-table-column>
+          type="selection"
+          width="55"
+        />
         <el-table-column
           label="模型类别">
           <template slot-scope="scope">
             <div v-if="!scope.row.editing">
-              <span>{{ scope.row.moduleType }}</span>
+              <span>{{ scope.row.name }}</span>
             </div>
             <div v-else>
-              <el-select v-model="scope.row.moduleType" placeholder="模型类别">
-                <el-option
-                  v-for="item in enhanceDeal"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
-                </el-option>
-              </el-select>
+              <el-input v-model="scope.row.name" placeholder="请填写模型类别"></el-input>
             </div>
           </template>
         </el-table-column>
+
+        <el-table-column
+          label="是否使用中">
+          <template slot-scope="scope">
+            <div v-if="!scope.row.adding">
+              <span>{{ scope.row.use_status == 0 ? '否' : '是' }}</span>
+            </div>
+          </template>
+        </el-table-column>
+
         <el-table-column
           label="操作">
           <template slot-scope="scope">
@@ -105,116 +91,142 @@
             </div>
           </template>
         </el-table-column>
+
       </el-table>
     </div>
   </div>
 </template>
 
 <script>
+import { modelCategory, modelCategoryUpdate, modelCategoryAdd, modelCategoryDel } from '@/api/modelCategory'
+
 export default {
   data() {
     return {
+      flag: false,
+      searchValue: '',
+      currentPage: 1,
+      multipleSelection: [],
       tempList: [],
-      imageType: [{
-        label: 'CT 头颅平扫',
-        value: 'CT 头颅平扫'
-      }, {
-        label: 'CT 腹部',
-        value: 'CT 腹部'
-      }, {
-        label: 'CT 胸部',
-        value: 'CT 胸部'
-      }, {
-        label: 'CT 脊柱',
-        value: 'CT 脊柱'
-      }, {
-        label: '胸腺钼靶',
-        value: '胸腺钼靶'
-      }, {
-        label: 'MRI',
-        value: 'MRI'
-      }],
-      enhanceDeal: [{
-        label: '通用类',
-        value: '通用类'
-      }]
+      tempName: "",
+      staOpts: [{
+         value: '0',
+         label: '否'
+       }, {
+         value: '1',
+         label: '是'
+       }],
+       use_status: ''
     }
   },
   created() {
-    this.tempList = JSON.parse(localStorage.getItem('tempList'))
+    this.getData()
   },
   methods: {
-    // 上下自由调整表格数据
-    swapItems(arr, index1, index2) {
-      arr[index1] = arr.splice(index2, 1, arr[index1])[0]
-      return arr
-    },
-    handleUp($index, row) {
-      if ($index === 0) {
-        return
+    // 数据初使化
+    getData() {
+      const params = {
+        'rows': 10,
+        'page': this.currentPage,
+        'name': this.searchValue
       }
-      this.swapItems(this.tempList, $index, $index - 1)
-    },
-    handleDown($index, row) {
-      if ($index === this.tempList.length - 1) {
-        return
-      }
-      this.swapItems(this.tempList, $index, $index + 1)
+      modelCategory(params).then(({ data }) => {
+        this.tempList = data.rows
+      })
     },
     // 编辑
     handleEdit($index, row) {
-      this.$set(this.tempList[$index], 'editing', true)
+      if (this.flag == false) {
+        this.flag = true
+        this.$set(this.tempList[$index], 'editing', true)
+        this.$set(this, 'tempName', row.name)
+      }else {
+        return
+      }
     },
     // 保存
     handleSave($index, row) {
-      if (row.moduleName && row.moduleIp && row.moduleType) {
-        this.$set(this.tempList[$index], 'editing', false)
-        localStorage.setItem('tempList', JSON.stringify(this.tempList))
-      } else {
-        this.$message.error('新建模型，请填写完全！')
+      // console.log($index, row)
+      if (!row.adding) {
+        const params = {
+          'id': row.id,
+          'name': row.name
+        }
+        modelCategoryUpdate(params).then(({ data }) => {
+          this.$message({type: 'success', message: '修改成功!'})
+          this.flag = false
+          this.getData()
+        })
+        .catch(error => {
+          this.$message({type: 'error', message: '修改模型类别，请填写完全！'})
+        })
+      }else {
+        modelCategoryAdd({"name": row.name}).then(({ data }) => {
+          this.$message({type: 'success', message: '添加成功!'})
+          this.handleCancel($index, row)
+        })
+        .catch(error => {
+          this.$message({type: 'error', message: '新建模型类别，请填写完全！'})
+        })
       }
     },
     // 取消
     handleCancel($index, row) {
-      this.$set(this.tempList[$index], 'editing', false)
+      if (row.adding) {
+        this.$set(this.tempList[$index], 'editing', false)
+        this.$set(this.tempList[$index], 'adding', false)
+        this.getData()
+      }else {
+        this.$set(this.tempList[$index], 'editing', false)
+        this.$set(this.tempList[$index], 'name', this.tempName)
+      }
+      this.flag = false
     },
     // 新增一条模板数据
     addTemp() {
+      this.flag = true
       this.tempList = this.tempList || []
       this.tempList.push({
-        moduleName: '',
-        moduleIp: '',
-        moduleType: '',
-        editing: true
+        name: '',
+        editing: true,
+        adding: true
       })
     },
     // 复制模板数据
     copyTemp() {
-      console.log('copy')
+      if (this.multipleSelection.length > 1) {
+        this.$message.info('请选择单一模型类别进行复制')
+      } else {
+        modelCategoryAdd({"name": this.multipleSelection[0].name}).then(({ data }) => {
+          this.$message({type: 'success', message: '复制成功!'})
+          this.getData()
+        }).catch(error => {})
+
+      }
     },
     // 删除模板数据
     deleteTemp() {
       console.log('delete')
     },
+    //多选
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+    },
     // 删除
     handleDelete($index, row) {
-      this.$confirm('此操作将永久删除该条模板, 是否继续?', '提示', {
+      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.tempList.splice($index, 1)
-        localStorage.setItem('tempList', JSON.stringify(this.tempList))
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
+        modelCategoryDel({"idList": [row.id]}).then(({ data }) => {
+          this.$message({type: 'success', message: '删除成功!'})
+          this.getData()
         })
-      }).catch((err) => {
-        this.$message({
-          type: 'error',
-          message: err
+        .catch(error => {
+          this.$message({type: 'error', message: '服务器响应异常!'})
         })
-      })
+      }).catch(err => {})
     }
   }
 }
@@ -255,4 +267,5 @@ export default {
       }
     }
   }
+  .template-manage >>> .el-table__header-wrapper .el-checkbox{display: none}
 </style>
