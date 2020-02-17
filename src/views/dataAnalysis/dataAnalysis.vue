@@ -3,7 +3,7 @@
     <el-row class="table-toolbar">
       <el-col :span="13">&nbsp;</el-col>
       <el-col :span="7" class="searchStyle">
-        <span>审讯模板名称:</span>
+        <span style="font-size:14px;">审讯模板名称&nbsp;</span>
         <el-input
           v-model="searchValue"
           size="small"
@@ -144,6 +144,7 @@ export default {
         width: 60%
       }
     }
+    .el-input--mini .el-input__inner,.el-button--mini{height:32px;line-height: 32px}
   }
   .headStyle th{
     color:red;
@@ -155,5 +156,4 @@ export default {
     justify-content: flex-end;
     align-items: center;
   }
-
 </style>

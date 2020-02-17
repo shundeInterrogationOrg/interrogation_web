@@ -1,12 +1,12 @@
 <template>
   <div class="onlineWrapper">
     <div class="searchTool">
-      <span>审讯模板</span>
+      <span>审讯模板&nbsp;</span>
       <div class="moduleNameIpt">
         <el-input v-model="moduleName" size="mini"></el-input>
       </div>
       <div class="moduleBtn">
-        <el-button size="mini" type="primary" @click="moduleSearch">查询预览</el-button>
+        <el-button size="mini" type="primary" @click="moduleSearch">搜索</el-button>
       </div>
     </div>
     <div v-if="viewFlag">
@@ -90,7 +90,7 @@ export default {
   .searchTool {
     padding: 15px 0;text-align: right;
     .moduleNameIpt{width: 200px;display: inline-block;}
-    .moduleBtn{display: inline-block;}
+    .moduleBtn{display: inline-block;margin-left: 10px}
   }
   .moduleName{font-size: 16px;border-bottom: 1px solid #EBEEF5;padding-bottom: 5px;margin-bottom: 20px}
   .moduleView{

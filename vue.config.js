@@ -49,8 +49,8 @@ module.exports = {
       }
     },
     overlay: {
-      warnings: false,
-      errors: false
+      warnings: true,
+      errors: true
     },
     after: require('./mock/mock-server')
   },

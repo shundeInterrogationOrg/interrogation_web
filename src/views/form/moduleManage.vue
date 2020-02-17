@@ -1,42 +1,49 @@
 <template>
   <div class="template-manage ">
-    <div class="temp-title">
-      <div class="toolBtn">
-        <el-button
+    <el-row class="table-toolbar">
+      <el-col :span="14">
+        <div class="temp-title">
+          <div class="toolBtn">
+            <el-button
+              size="small"
+              type="primary"
+              icon="el-icon-circle-plus-outline"
+              @click="addTemp">添加别类</el-button>
+          </div>
+          <div class="toolBtn">
+            <el-button
+              size="small"
+              type="primary"
+              icon="el-icon-picture-outline"
+              @click="copyTemp"
+            >复制</el-button>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="8" class="searchStyle" style="margin-top:20px">
+        <span style="font-size:14px;">模型类别&nbsp;</span>
+        <el-input
+          v-model="searchName"
           size="small"
-          type="primary"
-          icon="el-icon-circle-plus-outline"
-          @click="addTemp">添加别类</el-button>
-      </div>
-      <div class="toolBtn">
-        <el-button
-          size="small"
-          type="primary"
-          icon="el-icon-picture-outline"
-          @click="copyTemp"
-        >复制</el-button>
-      </div>
-      <!-- <div class="toolBtn">
-        <el-button
-          size="small"
-          type="primary"
-          icon="el-icon-remove-outline"
-          @click="deleteTemp"
-        >删除</el-button>
-      </div> -->
-    </div>
+          style="width:240px;margin-right:10px"
+          prefix-icon="el-icon-search"
+          placeholder="模型类别名称"
+          clearable
+        />
+        <el-button type="primary" size="small" @click="onSearch">搜索</el-button>
+      </el-col>
+
+    </el-row>
+
+
     <div class="temp-list">
       <el-table
         class="template-list"
         @selection-change="handleSelectionChange"
         :data="tempList"
         style="width: 100%">
-        <el-table-column
-          type="selection"
-          width="55"
-        />
-        <el-table-column
-          label="模型类别">
+        <el-table-column type="selection" width="55" />
+        <el-table-column label="模型类别">
           <template slot-scope="scope">
             <div v-if="!scope.row.editing">
               <span>{{ scope.row.name }}</span>
@@ -47,8 +54,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column
-          label="是否使用中">
+        <el-table-column label="是否使用中">
           <template slot-scope="scope">
             <div v-if="!scope.row.adding">
               <span>{{ scope.row.use_status == 0 ? '否' : '是' }}</span>
@@ -56,8 +62,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column
-          label="操作">
+        <el-table-column label="操作">
           <template slot-scope="scope">
             <div class="operate-groups">
               <el-button
@@ -93,6 +98,13 @@
         </el-table-column>
 
       </el-table>
+      <el-pagination
+        background
+        layout="total,prev, pager, next,jumper"
+        :total="total"
+        @current-change="handleCurrentChange"
+      />
+
     </div>
   </div>
 </template>
@@ -104,8 +116,9 @@ export default {
   data() {
     return {
       flag: false,
-      searchValue: '',
-      currentPage: 1,
+      searchName: '',
+      currentPage: 1, // 当前页
+      total: null,
       multipleSelection: [],
       tempList: [],
       tempName: "",
@@ -123,17 +136,20 @@ export default {
     this.getData()
   },
   methods: {
+
     // 数据初使化
     getData() {
       const params = {
         'rows': 10,
         'page': this.currentPage,
-        'name': this.searchValue
+        'name': this.searchName
       }
       modelCategory(params).then(({ data }) => {
         this.tempList = data.rows
+        this.total = data.total
       })
     },
+
     // 编辑
     handleEdit($index, row) {
       if (this.flag == false) {
@@ -144,9 +160,9 @@ export default {
         return
       }
     },
+
     // 保存
     handleSave($index, row) {
-      // console.log($index, row)
       if (!row.adding) {
         const params = {
           'id': row.id,
@@ -170,6 +186,7 @@ export default {
         })
       }
     },
+
     // 取消
     handleCancel($index, row) {
       if (row.adding) {
@@ -182,7 +199,8 @@ export default {
       }
       this.flag = false
     },
-    // 新增一条模板数据
+
+    // 新增
     addTemp() {
       this.flag = true
       this.tempList = this.tempList || []
@@ -192,6 +210,7 @@ export default {
         adding: true
       })
     },
+
     // 复制模板数据
     copyTemp() {
       if (this.multipleSelection.length > 1) {
@@ -204,14 +223,17 @@ export default {
 
       }
     },
+
     // 删除模板数据
     deleteTemp() {
       console.log('delete')
     },
+
     //多选
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
+
     // 删除
     handleDelete($index, row) {
       this.$confirm('此操作将永久删除, 是否继续?', '提示', {
@@ -227,7 +249,18 @@ export default {
           this.$message({type: 'error', message: '服务器响应异常!'})
         })
       }).catch(err => {})
+    },
+
+    onSearch() {
+      this.currentPage = 1
+      this.getData()
+    },
+
+    handleCurrentChange(val) {
+      this.currentPage = val
+      this.getData()
     }
+
   }
 }
 </script>
@@ -268,4 +301,5 @@ export default {
     }
   }
   .template-manage >>> .el-table__header-wrapper .el-checkbox{display: none}
+  .el-pagination {height: 44px;display: flex;justify-content: flex-end;align-items: center;}
 </style>
