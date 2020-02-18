@@ -34,11 +34,7 @@
 </template>
 
 <script>
-function kkk(sum) {
-  return sum+"win"
-}
 import { getOnlineData, numStr } from '@/api/onlineChat'
-import axios from '@/utils/axios'
 
 export default {
   data() {
@@ -55,7 +51,6 @@ export default {
     async moduleSearch() {
       const params = {
         'name': this.moduleName
-        // 'name': "qqq1 复制"
       }
       try {
         let data = await getOnlineData(params)
@@ -68,10 +63,10 @@ export default {
           })
         }
         //---
-        newdata[0].content = "我们是佛山市顺德区公安局交通警察大队机动中队的民警，现就有关案情依法对你进行询问，你应当如实回答，故意作伪证或者隐匿证据会负相应的法律责任，对案件无关问题，你有拒绝回答的权利，你有要求办案人员或者公安机关负责人回避的权利，有陈述和申辩的权利，以上权利义务告知，你听清楚了吗？"
-        newdata[0].modelName = "是非模型"
-        newdata[1].modelName = "是非模型"
-        newdata[1].content = "陈述和申辩的权利，以上权利义务告知，你听清楚了吗？"
+        // newdata[0].content = "我们是佛山市顺德区公安局交通警察大队机动中队的民警，现就有关案情依法对你进行询问，你应当如实回答，故意作伪证或者隐匿证据会负相应的法律责任，对案件无关问题，你有拒绝回答的权利，你有要求办案人员或者公安机关负责人回避的权利，有陈述和申辩的权利，以上权利义务告知，你听清楚了吗？"
+        // newdata[0].modelName = "是非模型"
+        // newdata[1].modelName = "是非模型"
+        // newdata[1].content = "陈述和申辩的权利，以上权利义务告知，你听清楚了吗？"
         this.data = newdata
         this.viewFlag = true
       } catch (error) {
