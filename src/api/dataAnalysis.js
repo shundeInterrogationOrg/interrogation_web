@@ -2,13 +2,26 @@
 import axios from '@/utils/axios'
 
 /**
- * @dec  获取数据统计数据
+ * @dec  获取数据统计
  */
 
 const getAnalysisData = function(params) {
-  return axios.post('/dataStatistics/dataStatisticsPageQuery', { params })
+  return axios.post('/dataStatistics/dataStatisticsPageQuery', params)
+}
+
+const addCases = function(params) {
+  return axios.post('/caseClassification/add', params)
+}
+const deleteCases = function(params) {
+  return axios.post('/caseClassification/delete', params)
+}
+const updataCases = function(params) {
+  return axios.post('/caseClassification/update', params)
 }
 
 export {
-  getAnalysisData
+  getAnalysisData,
+  addCases,
+  deleteCases,
+  updataCases
 }
