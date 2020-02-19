@@ -120,21 +120,12 @@ export default {
   data() {
     return {
       type: 'add', // 判断提示框是新增还是修改
-      list: null,
       listLoading: true,
-      searchValue: '',
+      searchValue: '', // 搜索时案件类型
       trialName: '', // 审讯模板名称
       traidType: '', // 案件类别选择
-      tableData: [],
-      options: [
-        { value: '二次酒驾' },
-        { value: '醉酒驾驶' },
-        { value: '无证驾驶' },
-        { value: '伪造车牌号码' },
-        { value: '盗窃(行政)' },
-        { value: '盗窃(刑事)' },
-        { value: '赌博(行政)' }
-      ],
+      tableData: [], // 表格数据
+      options: [], // 案件类别数据
       multipleSelection: [], // 表格选中
       currentPage: 1, // 当前页
       total: 30,
@@ -142,7 +133,8 @@ export default {
       form: {
         name: ''
       },
-      formLabelWidth: '100px'
+      formLabelWidth: '100px',
+      status: '1'// 选中数据的状态
     }
   },
   created() {
@@ -157,7 +149,8 @@ export default {
       const params = {
         'rows': 100,
         'page': 1,
-        'name': ''
+        'name': '',
+        'status': '1'
       }
       try {
         const { data } = await getCases(params)
@@ -173,7 +166,8 @@ export default {
       this.form.name = row.template_name
       this.form.id = row.id
       this.form.release_status = row.release_status
-      this.traidType = row.case_name
+      this.traidType = row.case_id
+      this.form.status = row.status
     },
     /** 发布和取消发布 */
     async handleStatus(row) {
@@ -181,7 +175,8 @@ export default {
         'name': row.template_name,
         'case_classification_id': row.case_id,
         'id': row.id,
-        'release_status': row.release_status
+        'release_status': row.release_status,
+        'status': row.status
       }
       if (row.release_status === '1') {
         params.release_status = '0'
@@ -206,6 +201,7 @@ export default {
         'template_name': this.trialName,
         'caseName': this.searchValue,
         'page': this.currentPage,
+        'status': this.status,
         'rows': 10 }
       this.listLoading = true
       try {
@@ -231,6 +227,7 @@ export default {
       this.dialogFormVisible = true
       this.form.name = ''
       this.form.id = ''
+      this.form.status = ''
       this.form.release_status = ''
       this.traidType = ''
       this.type = 'add'
@@ -252,6 +249,7 @@ export default {
           const params = {
             idList
           }
+          params.status = '0'
           try {
             const { data } = await deleteTrialTemplate(params)
             if (data.status === 'sucess') {
@@ -288,6 +286,8 @@ export default {
           const obj = {}
           obj.name = this.multipleSelection[0].template_name + ' 复制'
           obj.case_classification_id = this.multipleSelection[0].case_id
+          obj.status = this.multipleSelection[0].status
+
           try {
             const { data } = await addTrialTemplate(obj)
             if (data.status === 'sucess') {
@@ -323,7 +323,8 @@ export default {
         if (this.type === 'add') {
           const params = {
             'name': this.form.name,
-            'case_classification_id': this.traidType
+            'case_classification_id': this.traidType,
+            'status': '1'
           }
           try {
             const { data } = await addTrialTemplate(params)
@@ -342,7 +343,8 @@ export default {
             'name': this.form.name,
             'case_classification_id': this.traidType,
             'id': this.form.id,
-            'release_status': this.form.release_status
+            'release_status': this.form.release_status,
+            'status': this.form.status
           }
           try {
             const { data } = await updataTrialTemplate(params)

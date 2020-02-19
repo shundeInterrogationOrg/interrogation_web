@@ -6,11 +6,6 @@ import axios from '@/utils/axios'
  */
 
 const getCases = function(params) {
-  axios.post('/caseClassification/queryPage', params).then((res) => {
-    console.log(res)
-  }).catch((err) => {
-    console.log('111', err)
-  })
   const data = axios.post('/caseClassification/queryPage', params)
   return data
 }

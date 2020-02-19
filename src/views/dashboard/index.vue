@@ -92,16 +92,17 @@ export default {
       list: null,
       listLoading: true,
       searchValue: '',
-      tableData: [],
+      tableData: [], // 表格数据
       multipleSelection: [], // 表格选中
       currentPage: 1, // 当前页
-      total: null,
+      total: null, // 表格总数
       dialogFormVisible: false,
       form: {
         name: ''
       },
       formLabelWidth: '100px',
-      type: 'add'// 判断是新增还是修改
+      type: 'add', // 判断是新增还是修改
+      status: '1'// 案件类型的状态
     }
   },
   created() {
@@ -113,7 +114,8 @@ export default {
       const params = {
         'rows': 10,
         'page': this.currentPage,
-        'name': this.searchValue
+        'name': this.searchValue,
+        'status': this.status
       }
       this.listLoading = true
       getCases(params).then(({ data }) => {
@@ -136,6 +138,7 @@ export default {
       this.dialogFormVisible = true
       this.form.name = ''
       this.form.id = ''
+      this.form.status = ''
       this.type = 'add'
     },
     /** 编辑表格 */
@@ -144,11 +147,13 @@ export default {
       this.type = 'updata'
       this.form.name = row.name
       this.form.id = row.id
+      this.form.status = row.status
     },
     async handleCase() {
       if (this.type === 'add') {
         const params = {
-          'name': this.form.name
+          'name': this.form.name,
+          'status': '1'
         }
         try {
           const { data } = await addCases(params)
@@ -165,7 +170,8 @@ export default {
       } else {
         const params = {
           'name': this.form.name,
-          'id': this.form.id
+          'id': this.form.id,
+          'status': this.form.status
         }
         try {
           const { data } = await updataCases(params)
@@ -198,6 +204,7 @@ export default {
           const params = {
             idList
           }
+          params.status = '0'
           try {
             const { data } = await deleteCases(params)
             if (data.status === 'sucess') {
@@ -205,10 +212,10 @@ export default {
               this.currentPage = 1
               this.getData()
             } else {
-              this.$message.error('删除失败')
+              this.$message.error('删除失败，案件类别使用中')
             }
           } catch (error) {
-            this.$message.error('删除失败')
+            this.$message.error('删除失败，案件类别使用中')
           }
         }).catch(() => {
           this.$message({
