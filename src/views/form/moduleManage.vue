@@ -178,17 +178,25 @@ export default {
           'name': row.name
         }
         modelCategoryUpdate(params).then(({ data }) => {
-          this.$message({type: 'success', message: '修改成功!'})
-          this.flag = false
-          this.getData()
+          if (data.status == "repeat") {
+            this.$message({type: 'error', message: '模型类别已存在!'})
+          }else {
+            this.$message({type: 'success', message: '修改成功!'})
+            this.flag = false
+            this.getData()
+          }
         })
         .catch(error => {
           this.$message({type: 'error', message: '修改模型类别，请填写完全！'})
         })
       }else {
         modelCategoryAdd({"name": row.name}).then(({ data }) => {
-          this.$message({type: 'success', message: '添加成功!'})
-          this.handleCancel($index, row)
+          if (data.status == "repeat") {
+            this.$message({type: 'error', message: '模型类别已存在!'})
+          }else {
+            this.$message({type: 'success', message: '添加成功!'})
+            this.handleCancel($index, row)
+          }
         })
         .catch(error => {
           this.$message({type: 'error', message: '新建模型类别，请填写完全！'})

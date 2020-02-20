@@ -257,11 +257,14 @@ export default {
           'interface_url': row.interface_url,
           'model_category_id': this.tempCategoryId
         }
-        console.log(params)
         modelUpdate(params).then(({ data }) => {
-          this.$message({type: 'success', message: '修改成功!'})
-          this.flag = false
-          this.getData()
+          if (data.status == "repeat") {
+            this.$message({type: 'error', message: '模型名称已存在!'})
+          }else {
+            this.$message({type: 'success', message: '修改成功!'})
+            this.flag = false
+            this.getData()
+          }
         })
         .catch(error => {
           this.$message({type: 'error', message: '修改模型名称，请填写完全！'})
@@ -272,8 +275,12 @@ export default {
           return
         }
         modelAdd({"name": row.name, "interface_url":row.interface_url, "model_category_id": this.tempCategoryId, "model_category_name": this.tempCategory, "retValue": row.retValue}).then(({ data }) => {
-          this.$message({type: 'success', message: '添加成功!'})
-          this.handleCancel($index, row)
+          if (data.status == "repeat") {
+            this.$message({type: 'error', message: '模型名称已存在!'})
+          }else {
+            this.$message({type: 'success', message: '添加成功!'})
+            this.handleCancel($index, row)
+          }
         })
         .catch(error => {
           this.$message({type: 'error', message: '新建模型名称，请填写完全！'})
