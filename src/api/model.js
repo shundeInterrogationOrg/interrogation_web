@@ -21,7 +21,6 @@ const modelDel = function(params) {
   return axios.post('/model/delete', params)
 }
 
-
 export {
   model, modelUpdate, modelAdd, modelDel
 }

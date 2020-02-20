@@ -21,7 +21,6 @@ const modelCategoryDel = function(params) {
   return axios.post('/modelCategory/delete', params)
 }
 
-
 export {
   modelCategory,
   modelCategoryUpdate,
