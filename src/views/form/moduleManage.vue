@@ -235,8 +235,12 @@ export default {
         this.$message.info('请选择单一模型类别进行复制')
       } else {
         modelCategoryAdd({"name": this.multipleSelection[0].name + " 复制"}).then(({ data }) => {
-          this.$message({type: 'success', message: '复制成功!'})
-          this.getData()
+          if (data.status == "repeat") {
+            this.$message({type: 'error', message: '模型类别已存在!'})
+          }else {
+            this.$message({type: 'success', message: '复制成功!'})
+            this.getData()
+          }
         }).catch(error => {})
 
       }

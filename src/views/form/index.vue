@@ -323,8 +323,12 @@ export default {
         this.$message.info('请选择单一模型进行复制')
       } else {
         modelAdd({"name": this.multipleSelection[0].name + " 复制", "interface_url": this.multipleSelection[0].interface_url, "retValue": this.multipleSelection[0].retValue, "model_category_id": this.multipleSelection[0].model_category_id }).then(({ data }) => {
-          this.$message({type: 'success', message: '复制成功!'})
-          this.getData()
+          if (data.status == "repeat") {
+            this.$message({type: 'error', message: '模型名称已存在!'})
+          }else {
+            this.$message({type: 'success', message: '复制成功!'})
+            this.getData()
+          }
         }).catch(error => {})
 
       }
