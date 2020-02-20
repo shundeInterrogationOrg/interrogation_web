@@ -1,7 +1,7 @@
 <template>
   <div class="template-manage ">
     <el-row class="table-toolbar">
-      <el-col :span="14">
+      <el-col :span="7">
         <div class="temp-title">
           <div class="toolBtn">
             <el-button
@@ -15,12 +15,21 @@
               size="small"
               type="primary"
               icon="el-icon-picture-outline"
+              style="margin-left:10px"
               @click="copyTemp"
             >复制</el-button>
           </div>
+          <div class="toolBtn">
+            <el-button
+            type="primary"
+            class="el-button--danger"
+            size="small"
+            @click="handleDelete"
+            icon="el-icon-delete">删除</el-button>
+          </div>
         </div>
       </el-col>
-      <el-col :span="8" class="searchStyle" style="margin-top:20px">
+      <el-col :span="15" class="searchStyle" style="margin-top:20px;text-align: right;">
         <span style="font-size:14px;">模型类别&nbsp;</span>
         <el-input
           v-model="searchName"
@@ -79,13 +88,13 @@
                 icon="el-icon-success"
                 @click="handleSave(scope.$index, scope.row)">保存
               </el-button>
-              <el-button
+              <!-- <el-button
                 size="mini"
                 type="danger"
                 v-if="!scope.row.editing"
                 icon="el-icon-delete"
                 @click="handleDelete(scope.$index, scope.row)">删除
-              </el-button>
+              </el-button> -->
               <el-button
                 size="mini"
                 type="warning"
@@ -211,22 +220,17 @@ export default {
       })
     },
 
-    // 复制模板数据
+    // 复制
     copyTemp() {
       if (this.multipleSelection.length > 1) {
         this.$message.info('请选择单一模型类别进行复制')
       } else {
-        modelCategoryAdd({"name": this.multipleSelection[0].name}).then(({ data }) => {
+        modelCategoryAdd({"name": this.multipleSelection[0].name + " 复制"}).then(({ data }) => {
           this.$message({type: 'success', message: '复制成功!'})
           this.getData()
         }).catch(error => {})
 
       }
-    },
-
-    // 删除模板数据
-    deleteTemp() {
-      console.log('delete')
     },
 
     //多选
@@ -235,15 +239,40 @@ export default {
     },
 
     // 删除
-    handleDelete($index, row) {
+    // handleDelete($index, row) {
+    //   this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+    //     confirmButtonText: '确定',
+    //     cancelButtonText: '取消',
+    //     type: 'warning'
+    //   }).then(() => {
+    //     modelCategoryDel({"idList": [row.id]}).then(({ data }) => {
+    //       this.$message({type: 'success', message: '删除成功!'})
+    //       this.getData()
+    //     })
+    //     .catch(error => {
+    //       this.$message({type: 'error', message: '服务器响应异常!'})
+    //     })
+    //   }).catch(err => {})
+    // },
+
+    // 删除
+    handleDelete(){
       this.$confirm('此操作将永久删除, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        modelCategoryDel({"idList": [row.id]}).then(({ data }) => {
-          this.$message({type: 'success', message: '删除成功!'})
-          this.getData()
+        const idList = []
+        this.multipleSelection.forEach(row => {
+          idList.push(row.id)
+        })
+        modelCategoryDel({"idList": idList}).then(({ data }) => {
+          if (data.status == "error") {
+            this.$message({type: 'error', message: '模型类别在使用中，删除失败!'})
+          }else {
+            this.$message({type: 'success', message: '删除成功!'})
+            this.getData()
+          }
         })
         .catch(error => {
           this.$message({type: 'error', message: '服务器响应异常!'})

@@ -1,7 +1,7 @@
 <template>
   <div class="template-manage">
     <el-row class="table-toolbar">
-      <el-col :span="11">
+      <el-col :span="7">
         <div class="temp-title">
           <div class="toolBtn">
             <el-button
@@ -19,9 +19,17 @@
               @click="copyTemp"
             >复制</el-button>
           </div>
+          <div class="toolBtn">
+            <el-button
+            type="primary"
+            class="el-button--danger"
+            size="small"
+            @click="handleDelete"
+            icon="el-icon-delete">删除</el-button>
+          </div>
         </div>
       </el-col>
-      <el-col :span="11" class="searchStyle" style="margin-top:20px">
+      <el-col :span="15" class="searchStyle" style="margin-top:20px">
         <span style="font-size:14px;">模型类别&nbsp;</span>
         <el-input
           v-model="searchCategoryName"
@@ -134,14 +142,14 @@
                 @click="handleSave(scope.$index, scope.row)"
               >保存
               </el-button>
-              <el-button
+              <!-- <el-button
                 v-if="!scope.row.editing"
                 size="mini"
                 type="danger"
                 icon="el-icon-delete"
                 @click="handleDelete(scope.$index, scope.row)"
               >删除
-              </el-button>
+              </el-button> -->
               <el-button
                 v-if="scope.row.editing"
                 size="mini"
@@ -247,7 +255,7 @@ export default {
           'name': row.name,
           'retValue': row.retValue,
           'interface_url': row.interface_url,
-          'tempCategoryId': this.tempCategoryId
+          'model_category_id': this.tempCategoryId
         }
         console.log(params)
         modelUpdate(params).then(({ data }) => {
@@ -259,7 +267,11 @@ export default {
           this.$message({type: 'error', message: '修改模型名称，请填写完全！'})
         })
       }else {
-        modelAdd({"name": row.name, "interface_url":row.interface_url, "model_category_id": this.tempCategoryId, "model_category_name": this.tempCategory, "retValue": row.name}).then(({ data }) => {
+        if (this.tempCategory == "", this.tempCategoryId == "") {
+          this.$message({type: 'error', message: '请填写模型类别！'})
+          return
+        }
+        modelAdd({"name": row.name, "interface_url":row.interface_url, "model_category_id": this.tempCategoryId, "model_category_name": this.tempCategory, "retValue": row.retValue}).then(({ data }) => {
           this.$message({type: 'success', message: '添加成功!'})
           this.handleCancel($index, row)
         })
@@ -302,7 +314,7 @@ export default {
       if (this.multipleSelection.length > 1) {
         this.$message.info('请选择单一模型进行复制')
       } else {
-        modelAdd({"name": this.multipleSelection[0].name, "interface_url": this.multipleSelection[0].interface_url, "retValue": this.multipleSelection[0].retValue, "model_category_id": this.multipleSelection[0].model_category_id }).then(({ data }) => {
+        modelAdd({"name": this.multipleSelection[0].name + " 复制", "interface_url": this.multipleSelection[0].interface_url, "retValue": this.multipleSelection[0].retValue, "model_category_id": this.multipleSelection[0].model_category_id }).then(({ data }) => {
           this.$message({type: 'success', message: '复制成功!'})
           this.getData()
         }).catch(error => {})
@@ -321,15 +333,39 @@ export default {
     },
 
     // 删除
-    handleDelete($index, row) {
+    // handleDelete($index, row) {
+    //   this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+    //     confirmButtonText: '确定',
+    //     cancelButtonText: '取消',
+    //     type: 'warning'
+    //   }).then(() => {
+    //     modelDel({"idList": [row.id]}).then(({ data }) => {
+    //       this.$message({type: 'success', message: '删除成功!'})
+    //       this.getData()
+    //     })
+    //     .catch(error => {
+    //       this.$message({type: 'error', message: '服务器响应异常!'})
+    //     })
+    //   }).catch(err => {})
+    // },
+
+    handleDelete() {
       this.$confirm('此操作将永久删除, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        modelDel({"idList": [row.id]}).then(({ data }) => {
-          this.$message({type: 'success', message: '删除成功!'})
-          this.getData()
+        const idList = []
+        this.multipleSelection.forEach(row => {
+          idList.push(row.id)
+        })
+        modelDel({"idList": idList}).then(({ data }) => {
+          if (data.status == "error") {
+            this.$message({type: 'error', message: '模型在使用中，删除失败!'})
+          }else {
+            this.$message({type: 'success', message: '删除成功!'})
+            this.getData()
+          }
         })
         .catch(error => {
           this.$message({type: 'error', message: '服务器响应异常!'})
