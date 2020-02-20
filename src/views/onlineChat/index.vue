@@ -10,7 +10,7 @@
       </div>
     </div>
     <div v-if="viewFlag">
-      <div class="moduleName">{{moduleName}}</div>
+      <div class="moduleName"></div>
       <div class="moduleView">
         <div class="moduleWrapper">
           <div class="moduleViewBtn1">开始</div>

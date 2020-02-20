@@ -161,6 +161,8 @@ export default {
             this.$message.success('新增案件成功')
             this.currentPage = 1
             this.getData()
+          } else if(data.status === 'repeat') {
+            this.$message.error('新增案件已存在')
           } else {
             this.$message.error('新增案件失败')
           }
@@ -178,6 +180,8 @@ export default {
           if (data.status === 'sucess') {
             this.$message.success('修改案件成功')
             this.getData()
+          } else if(data.status === 'repeat') {
+            this.$message.error('修改案件已存在')
           } else {
             this.$message.error('修改案件失败')
           }
