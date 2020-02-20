@@ -66,7 +66,7 @@
         width="120"
       >
         <template slot-scope="scope">
-          <el-button v-if="scope.row.release_status==='0'" type="text" size="small" @click.stop="handleStatus(scope.row)">取消发布</el-button>
+          <el-button v-if="scope.row.release_status==='1'" type="text" size="small" @click.stop="handleStatus(scope.row)">取消发布</el-button>
           <el-button v-else type="text" size="small" @click.stop="handleStatus(scope.row)">发布</el-button>
           <el-button type="text" size="small" style="float:right" @click.stop="handleClick(scope.row)">编辑</el-button>
         </template>
@@ -324,7 +324,7 @@ export default {
           const params = {
             'name': this.form.name,
             'case_classification_id': this.traidType,
-            'status': '1'
+            'status': '0'
           }
           try {
             const { data } = await addTrialTemplate(params)
