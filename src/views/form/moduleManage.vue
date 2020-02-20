@@ -151,7 +151,8 @@ export default {
       const params = {
         'rows': 10,
         'page': this.currentPage,
-        'name': this.searchName
+        'name': this.searchName,
+        'status': '1'
       }
       modelCategory(params).then(({ data }) => {
         this.tempList = data.rows

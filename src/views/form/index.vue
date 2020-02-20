@@ -206,7 +206,8 @@ export default {
         'rows': 10,
         'page': this.currentPage,
         'model_name': this.searchName,
-        'model_category_name': this.searchCategoryName
+        'model_category_name': this.searchCategoryName,
+        'status': '1'
       }
       model(params).then(({ data }) => {
         this.tempList = data.rows

@@ -103,7 +103,8 @@ export default {
       const params = {
         'rows': 10,
         'page': this.currentPage,
-        'name': this.searchValue
+        'name': this.searchValue,
+        'status': '1'
       }
       this.listLoading = true
       getAnalysisData(params).then(({ data }) => {
