@@ -51,7 +51,7 @@
             </el-table-column>
             <el-table-column label="是否虚拟问题" align="center" width="100">
               <template slot-scope="scope">
-                <span v-if="scope.row.isVirtual">是</span>
+                <span v-if="scope.row.isVirtual == 'true' || scope.row.isVirtual == '1' ">是</span>
                 <span v-else>否</span>
               </template>
             </el-table-column>
@@ -72,7 +72,7 @@
       </el-table-column>
       <el-table-column label="是否虚拟问题" width="100" align="center">
         <template slot-scope="scope">
-          <span v-if="scope.row.isVirtual">是</span>
+          <span v-if="scope.row.isVirtual == 'true' || scope.row.isVirtual == '1' ">是</span>
           <span v-else>否</span>
         </template>
       </el-table-column>
@@ -109,7 +109,7 @@
           <el-input v-model="form.content" autosize type="textarea" style="width:60%;" size="mini" autocomplete="off" />
         </el-form-item>
         <el-form-item label="虚拟问题" :label-width="formLabelWidth">
-          <el-switch v-model="form.isVirtual" active-text="是" inactive-text="否" />
+          <el-switch v-model="isVirtual" active-text="是" inactive-text="否" @change="changeVirtual" />
         </el-form-item>
         <el-form-item v-for="(item, index) in replayArr" :key="index" :label-width="formLabelWidth">
           <el-form :model="item">
@@ -225,7 +225,6 @@ export default {
   },
   data() {
     return {
-      ischecked: false,
       trialTemplateId: null, // 审讯模版ID
       title: null, // 标题
       parentTitle: null,
@@ -252,10 +251,11 @@ export default {
       currentPage: 1, // 当前页
       total: 0,
       dialogFormVisible: false, // 弹框关闭
+      isVirtual: false, // 弹出框是否虚拟
       form: {
         sequence: '', // 问题序号
         content: '', // 问题内容
-        isVirtual: null, // 是否是虚拟问题
+        isVirtual: false, // 是否是虚拟问题
         // 回复情况集合
         answer: [
           {
@@ -493,7 +493,8 @@ export default {
       // 清空表单
       this.form.sequence = ''
       this.form.content = ''
-      this.form.isVirtual = false
+      // this.form.isVirtual = ''
+      this.isVirtual = false
       this.replayArr = [
         {
           'parsingWay': '',
@@ -517,11 +518,17 @@ export default {
         this.title = '新增问题'
         this.type = 'add'
       } else if (type === 'update') { // 编辑父问题
+        console.log(row.isVirtual)
         this.title = `编辑${row.sequence}`
         this.type = 'update'
         this.form.sequence = row.sequence
         this.form.content = row.content
-        this.form.isVirtual = Boolean(row.isVirtual)
+        if (row.isVirtual === 'true' || row.isVirtual === '1') {
+          this.isVirtual = true
+        } else {
+          this.isVirtual = false
+        }
+        console.log(this.isVirtual)
         // 回复情况集合
         this.replayArr = row.replyList
       } else if (type === 'child') { // 编辑子问题
@@ -538,6 +545,11 @@ export default {
       }
       // 打开弹框
       this.dialogFormVisible = true
+    },
+    //  切换是否虚拟按钮值
+    changeVirtual(val) {
+      console.log(val)
+      this.isVirtual = val
     },
     /** 删除 */
     deleteAll() {
@@ -627,16 +639,17 @@ export default {
           'id': this.updateRow.id,
           'sequence': this.form.sequence,
           'content': this.form.content,
-          'isVirtual': this.form.isVirtual + '',
+          'isVirtual': this.isVirtual + '',
           'trialTemplateId': this.trialTemplateId,
           'parentId': this.updateRow.parentId,
           'status': this.updateRow.status,
           'replyNum': this.updateRow.replyNum,
           'replyList': this.replayArr
         }
+        console.log(params.isVirtual)
         questionUpdate(params).then(res => {
           this.dialogFormVisible = false
-          if (res.data.status === 'sucess') {
+          if (res.data.status === 'success') {
             this.$message.success('编辑数据成功！')
             // 获取列表数据
             this.fetchBigData()
