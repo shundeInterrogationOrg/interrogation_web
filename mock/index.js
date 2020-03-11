@@ -5,12 +5,14 @@ import user from './user'
 import table from './table'
 import caseType from './caseType'
 import trialTemplate from './trialTemplate'
+import questionConfig from './questionConfig'
 
 const mocks = [
   ...user,
   ...table,
   ...caseType,
-  ...trialTemplate
+  ...trialTemplate,
+  ...questionConfig
 ]
 
 // for front mock

@@ -1,5 +1,4 @@
 const Mock = require('mockjs')
-console.log('111')
 module.exports = [
   {
     desc: '获取案件',

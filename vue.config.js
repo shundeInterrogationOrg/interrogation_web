@@ -31,7 +31,6 @@ module.exports = {
   // productionSourceMap: false,
 
   devServer: {
-    port: 8091,
     proxy: {
       // '/interrogation': {
       //   // target: `http://localhost:8090/mock`,
@@ -41,10 +40,10 @@ module.exports = {
       //   }
       // }
       '/interrogation': {
-        target: 'http://localhost:8090',
+        target: 'http://117.107.241.68:28091',
         changeOrigin: true,
         pathRewrite: {
-          '/interrogation': ''
+          '^/interrogation': '/interrogation'
         }
       }
     },

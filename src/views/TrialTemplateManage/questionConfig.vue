@@ -1,9 +1,9 @@
-//问题模版
+//问题模版页面
 <template>
   <div class="app-container">
     <span class="title">{{ title }}</span>
+    <!-- 按钮行 -->
     <el-row class="table-toolbar">
-
       <el-col :span="15">
         <el-button type="primary" size="small" @click="doAdd('add')">添加问题</el-button>
         <el-button type="primary" size="small" @click="copyModule">复制问题</el-button>
@@ -23,6 +23,7 @@
         <el-button type="primary" size="small" @click="onSearch">搜索</el-button>
       </el-col>
     </el-row>
+    <!-- 表格展示数据 -->
     <el-table
       ref="multipleTable"
       border
@@ -31,185 +32,173 @@
       tooltip-effect="dark"
       style="width: 100%;"
       @selection-change="handleSelectionChange"
+      @expand-change="handleExpandChange"
     >
       <el-table-column type="expand">
-        <template v-show="props.row.child" slot-scope="props">
+        <template v-show="zitableData">
           <el-table
-            v-show="props.row.child"
+            v-show="zitableData"
             size="small"
-            :data="props.row.child"
+            :data="zitableData"
             header-row-class-name="headStyle"
             :header-cell-style="{background:'#eef1f6',color:'#606266'}"
             align="center"
             stripe
-            border="true"
+            border
           >
-            <el-table-column
-              label="问题序号"
-              width="70"
-            >
-              <template slot-scope="scope">问题{{ scope.row.index }}</template>
+            <el-table-column label="问题序号" width="110">
+              <template slot-scope="scope">{{ scope.row.sequence }}</template>
             </el-table-column>
-            <el-table-column
-              label="是否虚拟问题"
-              width="100"
-            >
+            <el-table-column label="是否虚拟问题" align="center" width="100">
               <template slot-scope="scope">
-                <span v-if="scope.row.ifVR">是</span>
+                <span v-if="scope.row.isVirtual">是</span>
                 <span v-else>否</span>
               </template>
             </el-table-column>
-            <el-table-column
-              prop="question"
-              label="问题内容"
-            />
-            <el-table-column
-              prop="answer"
-              label="回复情况"
-              width="100"
-            />
-            <el-table-column
-              fixed="right"
-              label="操作"
-              width="140"
-            >
+            <el-table-column prop="content" label="问题内容" />
+            <el-table-column prop="replyNum" label="回复情况" align="center" width="100" />
+            <el-table-column fixed="right" label="操作" align="center" width="140">
               <template slot-scope="scope">
-                <el-button type="text" size="small" @click="handleChildClick(scope.row)">编辑</el-button>
+                <el-button type="text" size="small" @click="doAdd('child', scope.row)">编辑</el-button>
                 <el-button type="text" size="small" @click="handleDeleteClick(scope.row)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
         </template>
       </el-table-column>
-      <el-table-column
-        type="selection"
-        width="55"
-      />
-      <el-table-column
-        label="问题序号"
-        width="70"
-      >
-        <template slot-scope="scope">问题{{ scope.row.index }}</template>
+      <el-table-column type="selection" width="55" />
+      <el-table-column label="问题序号" width="110">
+        <template slot-scope="scope">{{ scope.row.sequence }}</template>
       </el-table-column>
-      <el-table-column
-        label="是否虚拟问题"
-        width="100"
-      >
+      <el-table-column label="是否虚拟问题" width="100" align="center">
         <template slot-scope="scope">
-          <span v-if="scope.row.ifVR">是</span>
+          <span v-if="scope.row.isVirtual">是</span>
           <span v-else>否</span>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="question"
-        label="问题内容"
-      />
-      <el-table-column
-        prop="answer"
-        label="回复情况"
-        width="120"
-      />
-      <el-table-column
-        fixed="right"
-        label="排序"
-        width="100"
-      >
+      <el-table-column prop="content" label="问题内容" />
+      <el-table-column prop="replyNum" label="回复情况" width="100" align="center" />
+      <el-table-column fixed="right" label="排序" width="100" align="center">
         <template slot-scope="scope">
           <i class="el-icon-arrow-up iSize" @click="handleSortClick(scope.row,'up')" />
           <i class="el-icon-arrow-down iSize" @click="handleSortClick(scope.row,'down')" />
         </template>
       </el-table-column>
-
-      <el-table-column
-        fixed="right"
-        label="操作"
-        width="140"
-      >
+      <el-table-column fixed="right" label="操作" width="140" align="center">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="handleClick(scope.row)">编辑</el-button>
-          <el-button type="text" size="small" @click="addChild(scope.row)">新增子问题</el-button>
+          <el-button type="text" size="small" @click="doAdd('update', scope.row)">编辑</el-button>
+          <el-button type="text" size="small" @click="doAdd('addChild', scope.row)">新增子问题</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <!-- 表格分页 -->
     <el-pagination
+      v-if="total > 10"
       background
       layout="total,prev, pager, next,jumper"
       :total="total"
       @current-change="handleCurrentChange"
     />
-    <el-dialog :title="title" :visible.sync="dialogFormVisible">
+    <!-- 弹出框 -->
+    <el-dialog :title="title" :visible.sync="dialogFormVisible" width="50%">
       <el-form :model="form">
+        <el-form-item label="问题序号" :label-width="formLabelWidth">
+          <el-input v-model="form.sequence" autocomplete="off" style="width:62%;" size="mini" />
+        </el-form-item>
         <el-form-item label="问题内容" :label-width="formLabelWidth">
-          <el-input v-model="form.question" autocomplete="off" />
+          <el-input v-model="form.content" autosize type="textarea" style="width:60%;" size="mini" autocomplete="off" />
         </el-form-item>
         <el-form-item label="虚拟问题" :label-width="formLabelWidth">
-          <el-switch v-model="form.ifVR" />
+          <el-switch v-model="form.isVirtual" active-text="是" inactive-text="否" />
         </el-form-item>
-        <el-form-item v-for="item in answers" :key="item" :label="'回复情况'+item" :label-width="formLabelWidth">
-          <el-form :model="form.answer[item-1]">
-            <el-form-item label="">
-              <el-checkbox-group v-model="form.answer[item-1].type">
-                <el-checkbox label="调用模型" name="type">
+        <el-form-item v-for="(item, index) in replayArr" :key="index" :label-width="formLabelWidth">
+          <el-form :model="item">
+            <el-form-item :label="'回复情况' + (index + 1)">
+              <el-radio-group v-model="item.parsingWay">
+                <el-radio :key="index + Math.random()" label="0">
                   调用模型
-                  <el-select v-model="form.answer[item-1].content.module1" placeholder="请选择" autocomplete="off" class="qSelect">
+                  <el-select v-model="item.modelId" placeholder="请选择" class="qSelect" size="mini">
                     <el-option
                       v-for="answ in answewrModule1"
-                      :key="answ.value"
-                      :label="answ.value"
-                      :value="answ.value"
+                      :key="answ.name"
+                      :label="answ.name"
+                      :value="answ.id"
                     />
                   </el-select>
-                  <el-select v-model="form.answer[item-1].content.module2" placeholder="请选择" autocomplete="off">
+                  <el-select v-model="item.retValue" placeholder="请选择" size="mini">
                     <el-option
                       v-for="anModule2 in answewrModule2"
-                      :key="anModule2.value"
-                      :label="anModule2.value"
+                      :key="anModule2.name"
+                      :label="anModule2.name"
                       :value="anModule2.value"
                     />
                   </el-select>
-                </el-checkbox>
-                <el-checkbox label="正则" name="type">
-                  正则
-                  <el-input v-model="form.answer[item-1].content.rules" type="textarea" />
-                </el-checkbox>
-                <el-checkbox label="取反" name="type">取反</el-checkbox>
-              </el-checkbox-group>
+                </el-radio>
+              </el-radio-group>
+              <el-radio-group v-model="item.regularNegation">
+                <el-radio :key="index + Math.random()" label="0">
+                  <span>正则表达式</span>
+                  <el-input
+                    v-model="item.regularExpression"
+                    size="mini"
+                    autosize
+                    clearable
+                    type="textarea"
+                  />
+                </el-radio>
+              </el-radio-group>
+              <el-radio-group v-model="item.regularNegation">
+                <el-radio :key="index + Math.random()" label="1">正则取反</el-radio>
+              </el-radio-group>
             </el-form-item>
-          </el-form>
-        </el-form-item>
-        <el-form-item label="流转方式" :label-width="formLabelWidth">
-          <el-form :model="form.way">
-            <el-form-item label="">
-              <el-radio-group v-model="form.way.resource">
-                <el-radio label="radio1">默认流程</el-radio>
+            <el-form-item :label="'流转方式' + (index + 1)">
+              <el-radio-group v-model="item.jumpTo">
+                <el-radio :key="index + Math.random()" label="1">默认流程</el-radio>
               </el-radio-group>
-              <el-radio-group v-model="form.way.resource">
-
-                <el-radio label="radio2">跳转到问题<el-input v-model="form.way.jump" size="mini" /></el-radio>
+              <el-radio-group v-model="item.jumpTo">
+                <el-radio :key="index + Math.random()" label="2">
+                  跳转到问题
+                  <el-input v-model="item.jumpToQuestion" type="text" clearable size="mini" />
+                </el-radio>
               </el-radio-group>
-              <el-radio-group v-model="form.way.resource">
-                <el-radio label="radio3">重复问题,同样情况<el-input v-model="form.way.num" size="mini" />遍后,
-                  <el-select v-model="form.way.jumpType" placeholder="请选择" autocomplete="off" size="mini">
+              <el-radio-group v-model="item.jumpTo">
+                <el-radio :key="index + Math.random()" label="3">
+                  重复问题,同样情况
+                  <el-input
+                    v-model="item.repetitions"
+                    type="number"
+                    placeholder="请输入次数"
+                    size="mini"
+                  />遍后,
+                  <el-select v-model="item.afterRepeat" placeholder="请选择" size="mini">
                     <el-option
-                      v-for="item in jumpTypes"
-                      :key="item.value"
-
-                      :label="item.value"
-                      :value="item.value"
+                      v-for="it in jumpTypes"
+                      :key="it.name"
+                      :label="it.name"
+                      :value="it.value"
                     />
-                  </el-select></el-radio>
+                  </el-select>
+                </el-radio>
               </el-radio-group>
-              <el-radio-group v-model="form.way.resource">
-                <el-radio label="radio4">跳转到人工干预，干预后跳转到问题<el-input v-model="form.way.jumpNum" size="mini" /></el-radio>
+              <el-radio-group v-model="item.jumpTo">
+                <el-radio :key="index + Math.random()" label="4">
+                  跳转到人工干预，干预后跳转到问题
+                  <el-input
+                    v-model="item.afterIntervention"
+                    placeholder="请输入内容"
+                    clearable
+                    size="mini"
+                  />
+                </el-radio>
               </el-radio-group>
             </el-form-item>
           </el-form>
         </el-form-item>
-        <el-form-item label="" :label-width="formLabelWidth">
+        <el-form-item label :label-width="formLabelWidth">
           <el-button type="primary" @click="addAnswer">添加回复情况</el-button>
         </el-form-item>
       </el-form>
-
+      <!-- 底部按钮 -->
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="doSure">确 定</el-button>
@@ -219,7 +208,9 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
+// import { getList } from '@/api/table'
+import dayjs from 'dayjs'
+import { questionSearch, questionAdd, questionUpdate, questionDelete, sequenceSort, queryPage } from '@/api/questionConfig'
 
 export default {
   filters: {
@@ -234,53 +225,18 @@ export default {
   },
   data() {
     return {
-      title: '', // 标题
-      type: 'add', // 判断提示框是新增还是修改
+      ischecked: false,
+      trialTemplateId: null, // 审讯模版ID
+      title: null, // 标题
+      parentTitle: null,
+      type: null, // 判断提示框是新增还是修改
       list: null,
       listLoading: true,
       searchValue: '',
       trialName: '', // 审讯模板名称
       traidType: [], // 案件类别选择
-      tableIndex: null, // 表格选中的序号
-      tableData: [{
-        ifVR: true,
-        question: '二次酒驾、无证驾驶、伪造车牌号码',
-        answer: '共3种回复情况',
-        index: 1,
-        child: [
-          {
-            ifVR: true,
-            question: '二次酒驾、无证驾驶、伪造车牌号码',
-            answer: '共3种回复情况',
-            index: 1
-          }, {
-            ifVR: true,
-            question: '醉酒驾驶',
-            answer: '共2种回复情况',
-            index: 2
-          }
-        ]
-      }, {
-        ifVR: true,
-        question: '醉酒驾驶',
-        answer: '共2种回复情况',
-        index: 2
-      }, {
-        ifVR: false,
-        question: '盗窃(行政)',
-        answer: '共3种回复情况',
-        index: 3
-      }, {
-        ifVR: true,
-        question: '盗窃(刑事)',
-        answer: '共3种回复情况',
-        index: 4
-      }, {
-        ifVR: false,
-        question: '赌博(行政)',
-        answer: '共3种回复情况',
-        index: 5
-      }],
+      tableData: [],
+      zitableData: [], // 子问题数据
       options: [
         { value: '二次酒驾' },
         { value: '醉酒驾驶' },
@@ -291,30 +247,26 @@ export default {
         { value: '赌博(行政)' }
       ],
       multipleSelection: [], // 表格选中
+      multipleSelectionId: [], // 表格选中的ID数组
       childSelection: [], // 子问题选中
       currentPage: 1, // 当前页
-      total: 30,
-      dialogFormVisible: false,
+      total: 0,
+      dialogFormVisible: false, // 弹框关闭
       form: {
-        question: '', // 问题内容
-        ifVR: null, // 是否是虚拟问题
-        answer: [{
-          type: [],
-          content: {
-            module1: '',
-            module2: '',
-            rules: ''
+        sequence: '', // 问题序号
+        content: '', // 问题内容
+        isVirtual: null, // 是否是虚拟问题
+        // 回复情况集合
+        answer: [
+          {
+            type: [],
+            content: {
+              module1: '',
+              module2: '',
+              rules: ''
+            }
           }
-        },
-        {
-          type: [],
-          content: {
-            module1: '',
-            module2: '',
-            rules: ''
-          }
-        }
-        ], // 回复情况
+        ],
         way: {
           resource: '',
           jump: null,
@@ -323,58 +275,119 @@ export default {
           jumpNum: null
         }// 流转方式
       },
+      replayObj: {// 回复情况
+        'parsingWay': '',
+        'modelId': '',
+        'regularExpression': '',
+        'jumpTo': '',
+        'repetitions': '',
+        'afterRepeat': '',
+        'afterIntervention': '',
+        'retValue': '',
+        'jumpToQuestion': '',
+        'regularNegation': '',
+        'status': '',
+        'addTime': dayjs().format('YYYY-MM-DD HH:mm:ss'),
+        'sequence': '',
+        'subSequence': ''
+      },
+      // 回复情况数据
+      replayArr: [
+        {
+          'parsingWay': '',
+          'modelId': '',
+          'regularExpression': '',
+          'jumpTo': '',
+          'repetitions': '',
+          'afterRepeat': '',
+          'afterIntervention': '',
+          'retValue': '',
+          'jumpToQuestion': '',
+          'regularNegation': '',
+          'status': '',
+          'addTime': dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          'sequence': '',
+          'subSequence': ''
+        }
+      ],
       jumpTypes: [
-        {
-          value: '跳到下一个问题'
-        },
-        { value: '跳到人工干预' }
+        { name: '跳到下一个问题', value: '0' },
+        { name: '跳到人工干预', value: '1' }
       ],
-      answewrModule1: [// 回复情况调用模型选择1
-        { value: '通用是非判断' },
-        {
-          value: '嫌疑人姓名抽取'
-        }
+      // 回复情况调用模型选择1
+      answewrModule1: [],
+      // 回复情况调用模型选择2
+      answewrModule2: [
+        { name: '否定回答', value: '0' },
+        { name: '肯定回答', value: '1' }
       ],
-      answewrModule2: [// 回复情况调用模型选择2
-        { value: '否定回答' },
-        {
-          value: '肯定回答'
-        }
-      ],
-      answers: [1],
       formLabelWidth: '100px',
       timer: null,
       lastTime: null,
-      addType: 'father'
+      // 编辑时拿到的row数据
+      updateRow: null
     }
   },
   created() {
-    this.fetchData()
+    // 获取列表数据
+    this.fetchBigData()
   },
   mounted() {
+    // 获取时间
     this.getDay()
+    this.trialTemplateId = this.$route.params.id
     this.title = this.$route.params.traidName
-    // console.log('adfe',)
+    // console.log(dayjs().format('YYYY-MM-DD HH:mm:ss'))
   },
   methods: {
-    /** 编辑父表格 */
-    handleClick(row) {
-      this.title = `编辑问题${row.index}`
-      this.type = 'updata'
-      this.addType = 'father'
-      this.dialogFormVisible = true
-      this.form.ifVR = row.ifVR
-      this.form.question = row.question
-      this.tableIndex = row.index - 1
+    // 查询大问题表格数据
+    fetchBigData() {
+      this.listLoading = true
+      this.tableData = []
+      const params = {
+        page: this.currentPage,
+        rows: 10,
+        trialTemplateId: this.trialTemplateId,
+        content: '', // 问题内容
+        flag: '0', // 大问题查询
+        sequence: '' // 子问题序号
+      }
+      questionSearch(params).then(res => {
+        // console.log(res.data)
+        this.listLoading = false
+        this.tableData = res.data.rows
+        this.total = res.data.total
+      })
     },
-    /** 编辑子问题 */
-    handleChildClick(row) {
-      this.title = `编辑问题${this.tableIndex + 1}的子问题${row.index}`
-      this.type = 'updata'
-      this.addType = 'child'
-      this.dialogFormVisible = true
-      this.form.ifVR = row.ifVR
-      this.form.question = row.question
+    // 获取某个大问题的子问题数据
+    handleExpandChange(row, list) {
+      // console.log(row)
+      this.parentTitle = row.sequence
+      this.zitableData = []
+      // 展开时获取数据
+      if (list.length > 0) {
+        const params = {
+          page: this.currentPage,
+          rows: 10,
+          trialTemplateId: this.trialTemplateId,
+          content: row.content, // 问题内容
+          flag: '1', // 子问题查询
+          sequence: row.sequence // 大问题序号
+        }
+        questionSearch(params).then(res => {
+          // console.log(res.data)
+          this.zitableData = res.data.rows
+        })
+      }
+    },
+    toggleSelection(rows) {
+      if (rows) {
+        rows.forEach(row => {
+          this.$refs.multipleTable.toggleRowExpansion(row)
+        })
+      } else {
+        this.$refs.multipleTable.clearSelection()
+      }
     },
     // 删除子问题
     handleDeleteClick(row) {
@@ -394,7 +407,8 @@ export default {
         })
       })
     },
-    handleSortClick: function(row, type) {
+    // 表格数据排序
+    handleSortClick(row, type) {
       const now = +new Date()
       if (this.lastTime && this.lastTime - now < 200) { // 在200ms内点击多次，只有一次生效
         clearTimeout(this.timer)
@@ -411,74 +425,154 @@ export default {
         }, 200)
       }
     },
-    // 排序升序
-    // handleUpClick(row) {
-    //   this.debounce(this.up(row))
-    // },
+    // 表格数据升序排列
     sortUp(row) {
-      if (row.index > 1) {
-        this.tableData.splice(row.index - 1, 1, ...this.tableData.splice(row.index - 2, 1, this.tableData[row.index - 1]))
-        this.tableData.forEach((ele, index) => {
-          ele.index = index + 1
-        })
+      const params = {
+        id: row.id,
+        sequence: row.sequence,
+        status: row.status,
+        trialTemplateId: row.trialTemplateId,
+        orderFlag: 1
       }
-    },
-    // 排序降序
-    sortDown(row) {
-      if (row.index < this.tableData.length) {
-        this.tableData.splice(row.index, 1, ...this.tableData.splice(row.index - 1, 1, this.tableData[row.index]))
-        this.tableData.forEach((ele, index) => {
-          ele.index = index + 1
-        })
-      }
-    },
-    fetchData() {
-      this.listLoading = true
-      getList().then(response => {
-        this.list = response.data.items
-        this.listLoading = false
+      sequenceSort(params).then(res => {
+        if (res.data.status === 'success') {
+          this.fetchBigData()
+          this.$message({ type: 'success', message: '升序排列完成！' })
+        } else {
+          this.$message({ type: 'error', message: '升序排列失败！' })
+        }
       })
     },
-    handleSelectionChange(val) {
-      this.multipleSelection = val
+    // 表格数据降序排序
+    sortDown(row) {
+      const params = {
+        id: row.id,
+        sequence: row.sequence,
+        status: row.status,
+        trialTemplateId: row.trialTemplateId,
+        orderFlag: 0
+      }
+      sequenceSort(params).then(res => {
+        if (res.data.status === 'success') {
+          this.fetchBigData()
+          this.$message({ type: 'success', message: '降序排列完成！' })
+        } else {
+          this.$message({ type: 'error', message: '降序排列失败！' })
+        }
+      })
     },
+    // 选中的表格数据
+    handleSelectionChange(val) {
+      this.multipleSelectionId = []
+      this.multipleSelection = val
+      val.forEach((v, id) => {
+        this.multipleSelectionId.push(v.id)
+      })
+      // console.log(this.multipleSelectionId)
+    },
+    // s
     onSearch() {},
-    /** 新增 */
-    doAdd() {
-      this.title = '新增问题'
+    // 一级模型查询
+    modelSearch() {
+      const params = {
+        'rows': 10,
+        'page': 1,
+        'model_name': '',
+        'model_category_name': ''
+      }
+      queryPage(params).then(res => {
+        // console.log('一级模型查询')
+        console.log(res.data.rows)
+        this.answewrModule1 = res.data.rows
+      })
+    },
+    /** 打开新增/编辑问题弹框 */
+    doAdd(type, row) {
+      // console.log(row)
+      this.updateRow = row
+      // 清空表单
+      this.form.sequence = ''
+      this.form.content = ''
+      this.form.isVirtual = false
+      this.replayArr = [
+        {
+          'parsingWay': '',
+          'modelId': '',
+          'regularExpression': '',
+          'jumpTo': '',
+          'repetitions': '',
+          'afterRepeat': '',
+          'afterIntervention': '',
+          'retValue': '',
+          'jumpToQuestion': '',
+          'regularNegation': '',
+          'status': '',
+          'addTime': '',
+          'sequence': '',
+          'subSequence': ''
+        }
+      ]
+      this.modelSearch()
+      if (type === 'add') {
+        this.title = '新增问题'
+        this.type = 'add'
+      } else if (type === 'update') { // 编辑父问题
+        this.title = `编辑${row.sequence}`
+        this.type = 'update'
+        this.form.sequence = row.sequence
+        this.form.content = row.content
+        this.form.isVirtual = Boolean(row.isVirtual)
+        // 回复情况集合
+        this.replayArr = row.replyList
+      } else if (type === 'child') { // 编辑子问题
+        // console.log(row)
+        this.title = `编辑问题${this.parentTitle}的子问题${row.sequence}`
+        this.type = 'child'
+        this.form.isVirtual = row.isVirtual
+        this.form.content = row.content
+        // 回复情况集合
+        this.replayArr = row.replyList
+      } else { // 肤问题新增子问题
+        // console.log(row)
+        this.title = `问题${row.sequence} 新增子问题`
+      }
+      // 打开弹框
       this.dialogFormVisible = true
-      this.answers = [1]
-      this.form.answer.splice(1)
-      Object.assign(this.form, {})
-      this.traidType = []
-      this.type = 'add'
-      this.addType = 'father'
     },
     /** 删除 */
     deleteAll() {
       if (this.multipleSelection.length === 0) {
         this.$message('请选择要删除的信息')
       } else {
-        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        this.$confirm('此操作将永久删除该条数据, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
+          // 确认删除
+          const params = {}
+          questionDelete(params).then(res => {
+            if (res.data.status === 'success') {
+              // 清空选中的数据
+              this.multipleSelection = []
+              this.$message({ type: 'success', message: '删除成功!' })
+              this.multipleSelection.forEach(row => {
+                // 用于多选表格，切换某一行的选中状态
+                this.$refs.multipleTable.toggleRowSelection(row)
+              })
+              // 重新获取表格数据
+              this.fetchBigData()
+            } else {
+              this.$message({ type: 'error', message: '删除失败!' })
+            }
           })
-          this.multipleSelection.forEach(row => {
-            this.$refs.multipleTable.toggleRowSelection(row)
-          })
-          this.multipleSelection = []
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          })
+        }).catch((action) => {
+          if (action === 'cancel') {
+            this.$message({ type: 'info', message: '已取消删除' })
+          } else {
+            this.$message({ type: 'error', message: '请求出现错误' })
+          }
         })
-        console.log(this.multipleSelection)
       }
     },
     /** 复制模版 */
@@ -496,53 +590,65 @@ export default {
         })
       }
     },
-    /**
-     * @dec 当前页发生改变时触发 1.更换当前页值 2.发射获取数据的事件
-     * @param val 页码
-     */
+    // 切换分页
     handleCurrentChange(val) {
       this.currentPage = val
-    },
-    /** 新增子问题 */
-    addChild(row) {
-      this.dialogFormVisible = true
-      this.tableIndex = row.index - 1
-      this.title = `问题${row.index} 新增子问题`
-      this.addType = 'child'
+      this.fetchBigData()
     },
     /** 添加回复 */
     addAnswer() {
-      const obj = { type: [],
-        content: {
-          module1: '',
-          module2: '',
-          rules: ''
-        }}
-      this.form.answer.push(obj)
-      this.answers.push(this.answers.length + 1)
+      this.replayArr.push(this.replayObj)
     },
-    /** 提交表单 */
+    /** 提交新增/编辑表单 */
     doSure() {
+      // 问题新增
       if (this.type === 'add') {
-        const add = {}
-        add.ifVR = this.form.ifVR
-        add.question = this.form.question
-        if (this.addType === 'child') {
-          if (this.tableData[this.tableIndex].child) {
-            this.tableData[this.tableIndex].child.push(add)
-          } else {
-            this.tableData[this.tableIndex].child = []
-            this.tableData[this.tableIndex].child.push(add)
-          }
-          console.log(this.tableData[this.tableIndex])
-        } else {
-          this.tableData.push(add)
+        const params = {
+          'sequence': this.form.sequence,
+          'content': this.form.content,
+          'isVirtual': this.form.isVirtual,
+          'trialTemplateId': this.trialTemplateId,
+          'replyList': this.replayArr
         }
+        questionAdd(params).then(res => {
+          this.dialogFormVisible = false
+          if (res.data.status === 'success') {
+            // 获取列表数据
+            this.fetchBigData()
+          } else if (res.data.status === 'repeat') {
+            this.$message.info('数据重复提交！')
+          } else {
+            this.$message.error('数据提交有误！')
+          }
+        })
+      } else { // 编辑
+        // console.log(this.updateRow)
+        const params = {
+          'id': this.updateRow.id,
+          'sequence': this.form.sequence,
+          'content': this.form.content,
+          'isVirtual': this.form.isVirtual + '',
+          'trialTemplateId': this.trialTemplateId,
+          'parentId': this.updateRow.parentId,
+          'status': this.updateRow.status,
+          'replyNum': this.updateRow.replyNum,
+          'replyList': this.replayArr
+        }
+        questionUpdate(params).then(res => {
+          this.dialogFormVisible = false
+          if (res.data.status === 'sucess') {
+            this.$message.success('编辑数据成功！')
+            // 获取列表数据
+            this.fetchBigData()
+          } else if (res.data.status === 'repeat') {
+            this.$message.info('数据重复提交！')
+          } else {
+            this.$message.error('数据提交有误！')
+          }
+        })
       }
-      this.answers = [1]
-      this.form.answer.splice(1)
-      this.dialogFormVisible = false
     },
+    // 获取时间 格式 yyyy-mm-dd hh:mm:ss
     getDay() {
       const date = new Date()
       const y = date.getFullYear()
@@ -573,75 +679,80 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-.title{
-color: #97a8be;
-font-weight: bold;
+.title {
+  color: #97a8be;
+  font-weight: bold;
 }
 .table-toolbar {
-    padding: 0 10px 10px;
-    margin-top: 10px;
-    .el-col {
-      margin-right: 10px;
-    }
-    .searchStyle{
-      display: flex;
-      // justify-items: baseline;
-      justify-content: space-between;
-      align-items: center;
-      span{
-        width: 60%
-      }
-    }
+  padding: 0 10px 10px;
+  margin-top: 10px;
+  .el-col {
+    margin-right: 10px;
   }
-   .el-pagination {
-    height: 44px;
+  .searchStyle {
     display: flex;
-    justify-content: flex-end;
+    // justify-items: baseline;
+    justify-content: space-between;
     align-items: center;
+    span {
+      width: 60%;
+    }
   }
-  .headStyle{
-    background: red!important
-  }
-  /deep/ .el-dialog{
-    width: 600px
-  }
-  /deep/ .el-dialog input,.el-dialog .el-select{
-    width: 97%
-  }
-   /deep/ .el-dialog  .el-radio__label input,/deep/ .el-dialog  .el-radio__label .el-input{
-     width: 130px
-   }
-  .el-dialog .el-select{
-    width: 40%
-  }
-  /deep/ .el-checkbox{
-    width: 100%
-  }
-  /deep/ .el-checkbox__label{
-    display: contents
-  }
-  /deep/ .el-textarea{
-    width: 87%
-  }
-   /deep/ .el-dialog .el-select input{
-    width: 100%
-  }
-  .iSize{
-    font-size: 24px;
-  }
-  /deep/ .el-table__expanded-cell{
-    padding:0 0 0 47px
-  }
-  /deep/ .el-radio-group{
-    width: 100%
-  }
-  // /deep/ .el-input{
-  //   width: 0;
-  // }
-  // .qSelect{
-  //   width:
-  // }
-  // /deep/ .el-table th, .el-table tr{
-  //   background: lightgray
-  // }
+}
+.el-pagination {
+  height: 44px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.headStyle {
+  background: red !important;
+}
+/deep/ .el-dialog {
+  width: 600px;
+}
+/deep/ .el-dialog input,
+.el-dialog .el-select {
+  width: 97%;
+}
+/deep/ .el-dialog .el-radio__label input,
+/deep/ .el-dialog .el-radio__label .el-input {
+  width: 130px;
+}
+.el-dialog .el-select {
+  width: 40%;
+}
+/deep/ .el-checkbox {
+  width: 100%;
+}
+/deep/ .el-checkbox__label {
+  display: contents;
+}
+/deep/ .el-textarea {
+  width: 87%;
+}
+/deep/ .el-dialog .el-select input {
+  width: 100%;
+}
+.iSize {
+  font-size: 24px;
+}
+/deep/ .el-table__expanded-cell {
+  padding: 0 0 0 47px;
+}
+/deep/ .el-radio-group {
+  width: 100%;
+}
+/deep/ .el-form-item__label {
+  text-align: left;
+}
+// /deep/ .el-input{
+//   width: 0;
+// }
+/deep/ .qSelect {
+  width: 60%;
+}
+// /deep/ .el-table th, .el-table tr{
+//   background: lightgray
+// }
 </style>
