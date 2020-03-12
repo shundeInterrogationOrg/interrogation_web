@@ -362,6 +362,7 @@ export default {
       }
     },
     toQuestion(row) {
+      console.log(row)
       this.$router.push({ name: 'Question', params: row })
     }
   }

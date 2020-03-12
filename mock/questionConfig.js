@@ -201,5 +201,16 @@ module.exports = [
       })
       return result
     }
+  },
+  {
+    desc: '问题回复删除',
+    url: '/questionReply/delete',
+    type: 'post',
+    response: (req, res) => {
+      const result = Mock.mock({
+        'status': 'success'
+      })
+      return result
+    }
   }
 ]

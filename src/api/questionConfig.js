@@ -31,11 +31,17 @@ const queryPage = function(params) {
   const data = axios.post('/model/queryPage', params)
   return data
 }
+// 问题回复删除
+const questionReply = function(params) {
+  const data = axios.post('/questionReply/delete', params)
+  return data
+}
 export {
   questionSearch,
   questionUpdate,
   questionAdd,
   questionDelete,
   sequenceSort,
-  queryPage
+  queryPage,
+  questionReply
 }
