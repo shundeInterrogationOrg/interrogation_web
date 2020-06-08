@@ -21,6 +21,7 @@
       </el-col>
       <el-col :span="3">
         <el-button type="primary" size="small" @click="onSearch">搜索</el-button>
+        <el-button type="primary" size="small" @click="toPreview">预览</el-button>
       </el-col>
     </el-row>
     <!-- 表格展示数据 -->
@@ -37,16 +38,18 @@
       @selection-change="handleSelectionChange"
       @expand-change="handleExpandChange"
     >
-      <!-- 子问题表格 -->
+      <!-- 二级子问题表格 -->
       <el-table-column type="expand">
         <template v-show="zitableData">
           <el-table
             v-show="zitableData"
+            v-loading="sonloading"
             size="small"
             :data="zitableData"
             header-row-class-name="headStyle"
             :header-cell-style="{background:'#eef1f6',color:'#606266'}"
             align="center"
+            row-key="id"
             stripe
             border
           >
@@ -61,10 +64,11 @@
             </el-table-column>
             <el-table-column prop="content" label="问题内容" />
             <el-table-column prop="replyNum" label="回复情况" align="center" width="100" />
-            <el-table-column fixed="right" label="操作" align="center" width="140">
+            <el-table-column fixed="right" label="操作" align="center" width="180">
               <template slot-scope="scope">
                 <el-button type="text" size="small" @click="doAdd('updateChild', scope.row)">编辑</el-button>
-                <el-button type="text" size="small" @click="handleDeleteClick(scope.row)">删除</el-button>
+                <!-- <el-button type="text" size="small" @click="handleDeleteClick(scope.row)">删除</el-button> -->
+                <el-button type="text" size="small" @click="doAdd('addParentChild', scope.row)">新增子问题</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -103,13 +107,13 @@
       :total="total"
       @current-change="handleCurrentChange"
     />
-    <!-- 弹出框 -->
+    <!-- 新增、编辑弹出框 -->
     <el-dialog :title="title" :visible.sync="dialogFormVisible" width="40%">
-      <el-form :model="form">
-        <el-form-item label="问题序号" :label-width="formLabelWidth">
+      <el-form :model="form" :rules="rules">
+        <el-form-item label="问题序号" :label-width="formLabelWidth" prop="sequence">
           <el-input v-model="form.sequence" autocomplete="off" style="width:82%;" size="mini" />
         </el-form-item>
-        <el-form-item label="问题内容" :label-width="formLabelWidth">
+        <el-form-item label="问题内容" :label-width="formLabelWidth" prop="content">
           <el-input v-model="form.content" autosize type="textarea" style="width:80%;" size="mini" autocomplete="off" />
         </el-form-item>
         <el-form-item label="虚拟问题" :label-width="formLabelWidth">
@@ -141,15 +145,22 @@
                     </el-select>
                   </el-radio>
                 </el-radio-group>
-                <el-radio-group v-model="item.regularNegation">
-                  <el-radio :key="index + Math.random()" label="0">
+                <el-radio-group v-model="item.parsingWay">
+                  <el-radio :key="index + Math.random()" label="1">
                     <span>正则表达式</span>
-                    <el-input v-model="item.regularExpression" size="mini" autosize clearable type="textarea"/>
+                    <el-input v-model="item.regularExpression" size="mini" autosize clearable type="textarea" />
                   </el-radio>
                 </el-radio-group>
-                <el-radio-group v-model="item.regularNegation">
-                  <el-radio :key="index + Math.random()" label="1">正则取反</el-radio>
-                </el-radio-group>
+                <template v-if="item.parsingWay === '1'">
+                  <el-radio-group v-model="item.regularNegation">
+                    <el-radio :key="index + Math.random()" label="0">正则取反</el-radio>
+                  </el-radio-group>
+                </template>
+                <template v-else>
+                  <el-radio-group v-model="item.regularNegation">
+                    <el-radio :key="index + Math.random()" disabled label="1">正则取反</el-radio>
+                  </el-radio-group>
+                </template>
               </el-form-item>
               <el-form-item :label="'流转方式' + (index + 1)">
                 <el-radio-group v-model="item.jumpTo" @change="changeRoamWay(index)">
@@ -197,7 +208,7 @@
           </el-form-item>
         </template>
         <el-form-item label :label-width="formLabelWidth">
-          <el-button type="primary" @click="addAnswer">添加回复情况</el-button>
+          <el-button type="primary" @click="addAnswer()">添加回复情况</el-button>
         </el-form-item>
       </el-form>
       <!-- 底部按钮 -->
@@ -227,7 +238,8 @@ export default {
   },
   data() {
     return {
-      trialTemplateId: null, // 审讯模版ID
+      // trialTemplateId: '79be8392-5673-449b-8af5-64d113300dfe', // 审讯模版ID
+      trialTemplateId: '', // 审讯模版ID
       templateName: null, // 审讯模版名称
       title: null, // 标题
       parentTitle: null,
@@ -237,6 +249,7 @@ export default {
       searchValue: '',
       trialName: '', // 审讯模板名称
       parentId: '', // 父问题ID
+      sonId: '', // 子问题ID
       traidType: [], // 案件类别选择
       tableData: [],
       expandRowId: [], // 表格展开行的ID数组
@@ -260,39 +273,21 @@ export default {
       form: {
         sequence: '', // 问题序号
         content: '', // 问题内容
-        isVirtual: false, // 是否是虚拟问题
-        // 回复情况集合
-        answer: [
-          {
-            type: [],
-            content: {
-              module1: '',
-              module2: '',
-              rules: ''
-            }
-          }
-        ],
-        way: {
-          resource: '',
-          jump: null,
-          num: null,
-          jumpType: '',
-          jumpNum: null
-        }// 流转方式
+        isVirtual: false // 是否是虚拟问题
       },
       replayObj: {// 回复情况
         'id': '',
         'questionId': '',
-        'parsingWay': '',
+        'parsingWay': '0',
         'modelId': '',
         'regularExpression': '',
-        'jumpTo': '',
+        'jumpTo': '1',
         'repetitions': '',
         'afterRepeat': '',
         'afterIntervention': '',
-        'retValue': '',
+        'retValue': '0',
         'jumpToQuestion': '',
-        'regularNegation': '',
+        'regularNegation': '1',
         'status': '1',
         'addTime': dayjs().format('YYYY-MM-DD HH:mm:ss'),
         'sequence': '',
@@ -303,16 +298,16 @@ export default {
         {
           'id': '',
           'questionId': '',
-          'parsingWay': '',
+          'parsingWay': '0',
           'modelId': '',
           'regularExpression': '',
-          'jumpTo': '',
+          'jumpTo': '1',
           'repetitions': '',
           'afterRepeat': '',
           'afterIntervention': '',
-          'retValue': '',
+          'retValue': '0',
           'jumpToQuestion': '',
-          'regularNegation': '',
+          'regularNegation': '1',
           'status': '1',
           'addTime': dayjs().format('YYYY-MM-DD HH:mm:ss'),
           'sequence': '',
@@ -334,7 +329,16 @@ export default {
       timer: null,
       lastTime: null,
       // 编辑时拿到的row数据
-      updateRow: null
+      updateRow: null,
+      rules: {
+        sequence: [
+          { required: true, message: '请输入问题序号', trigger: 'blur' }
+        ],
+        content: [
+          { required: true, message: '请输入问题内容', trigger: 'blur' }
+        ]
+      },
+      sonloading: true // 子问题加载
     }
   },
   mounted() {
@@ -392,6 +396,7 @@ export default {
           }
           questionSearch(params).then(res => {
             // console.log(res.data)
+            this.sonloading = false
             this.zitableData = res.data.rows
           })
         }
@@ -515,6 +520,10 @@ export default {
         this.total = res.data.total
       })
     },
+    // 跳转到在线预览页面
+    toPreview() {
+      this.$router.push({ path: '/onlineChat/onlineChat' })
+    },
     // 一级模型查询
     modelSearch() {
       const params = {
@@ -536,26 +545,24 @@ export default {
       this.form.sequence = ''
       this.form.content = ''
       this.isVirtual = false
-      this.replayArr = [
-        {
-          'id': '',
-          'questionId': '',
-          'parsingWay': '',
-          'modelId': '',
-          'regularExpression': '',
-          'jumpTo': '',
-          'repetitions': '',
-          'afterRepeat': '',
-          'afterIntervention': '',
-          'retValue': '',
-          'jumpToQuestion': '',
-          'regularNegation': '',
-          'status': '1',
-          'addTime': '',
-          'sequence': '',
-          'subSequence': ''
-        }
-      ]
+      this.replayArr = [{
+        'id': '',
+        'questionId': '',
+        'parsingWay': '0',
+        'modelId': '',
+        'regularExpression': '',
+        'jumpTo': '1',
+        'repetitions': '',
+        'afterRepeat': '',
+        'afterIntervention': '',
+        'retValue': '0',
+        'jumpToQuestion': '',
+        'regularNegation': '1',
+        'status': '1',
+        'addTime': dayjs().format('YYYY-MM-DD HH:mm:ss'),
+        'sequence': '',
+        'subSequence': ''
+      }]
       this.modelSearch()
       if (type === 'add') {
         this.title = '新增问题'
@@ -581,6 +588,7 @@ export default {
         this.type = 'updateChild'
         this.form.sequence = row.sequence
         this.form.content = row.content
+        this.form.parentId = row.parentId
         if (row.isVirtual === 'true' || row.isVirtual === '1') {
           this.isVirtual = true
         } else {
@@ -593,6 +601,8 @@ export default {
         this.title = `${row.sequence} 新增子问题`
         this.parentId = row.id
         this.type = 'addChild'
+        // 将默认的第一个回复加上父问题ID
+        this.replayArr[0].questionId = row.id
       }
       // 打开弹框
       this.dialogFormVisible = true
@@ -683,7 +693,26 @@ export default {
     },
     /** 添加回复 */
     addAnswer() {
-      this.replayArr.push(this.replayObj)
+      // console.log(this.replayArr[this.replayArr.length - 1])
+      const obj = {
+        'id': '',
+        'questionId': this.replayArr[this.replayArr.length - 1].questionId,
+        'parsingWay': '0',
+        'modelId': '',
+        'regularExpression': '',
+        'jumpTo': '1',
+        'repetitions': '',
+        'afterRepeat': '',
+        'afterIntervention': '',
+        'retValue': '0',
+        'jumpToQuestion': '',
+        'regularNegation': '1',
+        'status': '1',
+        'addTime': dayjs().format('YYYY-MM-DD HH:mm:ss'),
+        'sequence': '',
+        'subSequence': ''
+      }
+      this.replayArr.push(obj)
     },
     // 删除回复
     deleteAnswer(index) {
@@ -696,99 +725,101 @@ export default {
         }
       })
     },
-    /** 提交新增/编辑表单 */
+    /** 提交新增、编辑表单 */
     doSure() {
-      // 问题新增
-      if (this.type === 'add') {
-        const params = {
-          'sequence': this.form.sequence,
-          'content': this.form.content,
-          'isVirtual': this.form.isVirtual,
-          'trialTemplateId': this.trialTemplateId,
-          'replyList': this.replayArr
-        }
-        questionAdd(params).then(res => {
-          this.dialogFormVisible = false
-          if (res.data.status === 'success') {
-            // 获取列表数据
-            this.fetchBigData()
-          } else if (res.data.status === 'repeat') {
-            this.$message.info('数据重复提交！')
-          } else {
-            this.$message.error('数据提交有误！')
+      if (this.form.sequence && this.form.content) {
+        if (this.type === 'add') { // 问题新增
+          const params = {
+            'sequence': this.form.sequence,
+            'content': this.form.content,
+            'isVirtual': this.form.isVirtual,
+            'trialTemplateId': this.trialTemplateId,
+            'replyList': this.replayArr
           }
-        })
-      } else if (this.type === 'update') { // 编辑父问题
-        // console.log(this.updateRow)
-        const params = {
-          'id': this.updateRow.id,
-          'sequence': this.form.sequence,
-          'content': this.form.content,
-          'isVirtual': this.isVirtual + '',
-          'trialTemplateId': this.trialTemplateId,
-          'parentId': this.updateRow.parentId,
-          'status': this.updateRow.status,
-          'replyNum': this.updateRow.replyNum,
-          'replyList': this.replayArr
-        }
-        // console.log(params.isVirtual)
-        questionUpdate(params).then(res => {
-          this.dialogFormVisible = false
-          if (res.data.status === 'success') {
-            this.$message.success('编辑数据成功！')
+          questionAdd(params).then(res => {
+            this.dialogFormVisible = false
+            if (res.data.status === 'success') {
             // 获取列表数据
-            this.fetchBigData()
-          } else if (res.data.status === 'repeat') {
-            this.$message.info('数据重复提交！')
-          } else {
-            this.$message.error('数据提交有误！')
+              this.fetchBigData()
+            } else if (res.data.status === 'repeat') {
+              this.$message.info('数据重复提交！')
+            } else {
+              this.$message.error('数据提交有误！')
+            }
+          })
+        } else if (this.type === 'update') { // 编辑父问题
+          const params = {
+            'id': this.updateRow.id,
+            'sequence': this.form.sequence,
+            'content': this.form.content,
+            'isVirtual': this.isVirtual + '',
+            'trialTemplateId': this.trialTemplateId,
+            'parentId': this.updateRow.parentId,
+            'status': this.updateRow.status,
+            'replyNum': this.updateRow.replyNum,
+            'replyList': this.replayArr
           }
-        })
-      } else if (this.type === 'addChild') { // 新增子问题
-        const params = {
-          'sequence': this.form.sequence,
-          'content': this.form.content,
-          'isVirtual': this.form.isVirtual,
-          'trialTemplateId': this.trialTemplateId,
-          'parentId': this.parentId,
-          'replyList': this.replayArr
-        }
-        questionAdd(params).then(res => {
-          this.dialogFormVisible = false
-          if (res.data.status === 'success') {
+          questionUpdate(params).then(res => {
+            this.dialogFormVisible = false
+            if (res.data.status === 'success') {
+              this.$message.success('编辑数据成功！')
+              // 获取列表数据
+              this.fetchBigData()
+            } else if (res.data.status === 'repeat') {
+              this.$message.info('数据重复提交！')
+            } else {
+              this.$message.error('数据提交有误！')
+            }
+          })
+        } else if (this.type === 'addChild') { // 父问题新增子问题
+          // console.log('父问题新增子问题')
+          const params = {
+            'sequence': this.form.sequence,
+            'content': this.form.content,
+            'isVirtual': this.form.isVirtual,
+            'trialTemplateId': this.trialTemplateId,
+            'parentId': this.parentId,
+            'replyList': this.replayArr
+          }
+          // console.log(params)
+          questionAdd(params).then(res => {
+            this.dialogFormVisible = false
+            if (res.data.status === 'success') {
             // 获取列表数据
-            this.fetchBigData()
-          } else if (res.data.status === 'repeat') {
-            this.$message.info('数据重复提交！')
-          } else {
-            this.$message.error('数据提交有误！')
+              this.fetchBigData()
+            } else if (res.data.status === 'repeat') {
+              this.$message.info('数据重复提交！')
+            } else {
+              this.$message.error('数据提交有误！')
+            }
+          })
+        } else if (this.type === 'updateChild') { // 编辑子问题
+          const params = {
+            'id': this.updateRow.id,
+            'sequence': this.form.sequence,
+            'content': this.form.content,
+            'isVirtual': this.isVirtual + '',
+            'trialTemplateId': this.trialTemplateId,
+            'parentId': this.updateRow.parentId,
+            'status': this.updateRow.status,
+            'replyNum': this.updateRow.replyNum,
+            'replyList': this.replayArr
           }
-        })
-      } else if (this.type === 'updateChild') { // 编辑子问题
-        // console.log(this.type)
-        const params = {
-          'id': this.updateRow.id,
-          'sequence': this.form.sequence,
-          'content': this.form.content,
-          'isVirtual': this.isVirtual + '',
-          'trialTemplateId': this.trialTemplateId,
-          'parentId': this.updateRow.parentId,
-          'status': this.updateRow.status,
-          'replyNum': this.updateRow.replyNum,
-          'replyList': this.replayArr
+          questionUpdate(params).then(res => {
+            this.dialogFormVisible = false
+            if (res.data.status === 'success') {
+              this.$message.success('编辑数据成功！')
+              // 获取列表数据
+              this.fetchBigData()
+            } else if (res.data.status === 'repeat') {
+              this.$message.info('数据重复提交！')
+            } else {
+              this.$message.error('数据提交有误！')
+            }
+          })
         }
-        questionUpdate(params).then(res => {
-          this.dialogFormVisible = false
-          if (res.data.status === 'success') {
-            this.$message.success('编辑数据成功！')
-            // 获取列表数据
-            this.fetchBigData()
-          } else if (res.data.status === 'repeat') {
-            this.$message.info('数据重复提交！')
-          } else {
-            this.$message.error('数据提交有误！')
-          }
-        })
+      } else {
+        this.$message.warning('问题序号和内容不允许为空！')
       }
     },
     // 获取时间 格式 yyyy-mm-dd hh:mm:ss

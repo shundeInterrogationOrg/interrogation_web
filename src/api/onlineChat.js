@@ -8,7 +8,26 @@ import axios from '@/utils/axios'
 const getOnlineData = function(params) {
   return axios.post('/onlinePreview/onlinePreviewPageQuery', { params })
 }
+/**
+ * @dec  第一次获取问题
+ */
 
+const queryFirstQuestion = function(params) {
+  return axios.post('/onlineTesting/queryFirstQuestion', params)
+}
+/**
+ * @dec  第二次获取问题
+ */
+
+const queryAnswer = function(params) {
+  return axios.post('/onlineTesting/onlineTesting', params)
+}
+/**
+ * @dec  记录所有聊天问答的数据
+ */
+const getRecord = function(params) {
+  return axios.post('/onlineTesting/getRecord', params)
+}
 const numStr = function(num) {
   const changeNum = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
   const unit = ['', '十', '百', '千', '万']
@@ -30,5 +49,8 @@ const numStr = function(num) {
 
 export {
   getOnlineData,
-  numStr
+  numStr,
+  queryFirstQuestion,
+  queryAnswer,
+  getRecord
 }

@@ -48,7 +48,6 @@ export const constantRoutes = [
       meta: { title: '案件类别', icon: 'dashboard' }
     }]
   },
-
   {
     path: '/trialTemplateManage',
     component: Layout,
@@ -100,12 +99,19 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/onlineChat/index',
     name: 'OnlineChat',
+    meta: { title: '预览测试', icon: 'nested' },
     children: [
       {
         path: 'onlineChat',
         name: 'onlineChat',
         component: () => import('@/views/onlineChat/index'),
-        meta: { title: '在线预览', icon: 'nested' }
+        meta: { title: '在线预览', icon: '' }
+      },
+      {
+        path: 'onlineTest',
+        name: 'onlineTest',
+        component: () => import('@/views/onlineChat/onlineTest'),
+        meta: { title: '在线测试', icon: '' }
       }
     ]
   },

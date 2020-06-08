@@ -3,14 +3,14 @@
     <div class="searchTool">
       <span>审讯模板&nbsp;</span>
       <div class="moduleNameIpt">
-        <el-input v-model="moduleName" size="mini"></el-input>
+        <el-input v-model="moduleName" size="mini" />
       </div>
       <div class="moduleBtn">
         <el-button size="mini" type="primary" @click="moduleSearch">搜索</el-button>
       </div>
     </div>
     <div v-if="viewFlag">
-      <div class="moduleName"></div>
+      <div class="moduleName" />
       <div class="moduleView">
         <div class="moduleWrapper">
           <div class="moduleViewBtn1">开始</div>
@@ -18,10 +18,10 @@
             <ul>
               <li v-for="(item, index) in data" class="item">
                 <div class="con">
-                  <h6>问题{{item.sequence}}</h6>
-                  <p>{{item.content}}</p>
-                  <div class="moduleType"><b>{{item.modelName}}</b></div>
-                  <div class="line" v-if="item.modelName.indexOf('是非模型') != -1"><u>是</u><i>否</i></div>
+                  <h6>问题{{ item.sequence }}</h6>
+                  <p>{{ item.content }}</p>
+                  <div class="moduleType"><b>{{ item.modelName }}</b></div>
+                  <div v-if="item.modelName.indexOf('是非模型') != -1" class="line"><u>是</u><i>否</i></div>
                 </div>
               </li>
             </ul>
@@ -53,16 +53,16 @@ export default {
         'name': this.moduleName
       }
       try {
-        let data = await getOnlineData(params)
-        let newdata = []
+        const data = await getOnlineData(params)
+        const newdata = []
         for (var i = 0; i < data.data.rows.length; i++) {
           newdata.push({
-            sequence : numStr(i+1),
-            content : data.data.rows[i].content,
-            modelName : data.data.rows[i].modelName || "- - -"
+            sequence: numStr(i + 1),
+            content: data.data.rows[i].content,
+            modelName: data.data.rows[i].modelName || '- - -'
           })
         }
-        //---
+        // ---
         // newdata[0].content = "我们是佛山市顺德区公安局交通警察大队机动中队的民警，现就有关案情依法对你进行询问，你应当如实回答，故意作伪证或者隐匿证据会负相应的法律责任，对案件无关问题，你有拒绝回答的权利，你有要求办案人员或者公安机关负责人回避的权利，有陈述和申辩的权利，以上权利义务告知，你听清楚了吗？"
         // newdata[0].modelName = "是非模型"
         // newdata[1].modelName = "是非模型"
@@ -75,7 +75,6 @@ export default {
       }
     }
   }
-
 
 }
 </script>
